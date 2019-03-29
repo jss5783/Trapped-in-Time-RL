@@ -23,8 +23,8 @@ Starting code based on Jotaf's roguelike tutorial
 import tcod
 # from InputListener import *
 from src.Map import *
-from src.Tile import *
 from src.constants import *
+from src.Entity import *
 
 #declaration and initialization
 map1 = Map(MAP_WIDTH, MAP_HEIGHT, "../resources/map.txt")
@@ -77,6 +77,7 @@ def handle_keys(key, mouse, inMap):
 # 		inMap.alstObject[intPlayerX + 1][intPlayerY].append("@")
 # 		intPlayerX += 1
 		if ((map1.intPlayerX + 1) < MAP_WIDTH):
+			print(map1.intPlayerX + 1, map1.intPlayerY)
 			map1.updatePlayerPosition(map1.intPlayerX + 1, map1.intPlayerY)
 	elif key.vk == tcod.KEY_SPACE:	#TODO: time travel; checks for collision.
 		bIsSafe = True
@@ -96,7 +97,9 @@ def handle_keys(key, mouse, inMap):
 
 	#mouse-handling
 	if mouse.lbutton_pressed == True:
-		print("[DEBUG] Left-clicked at ", mouse.cx, ",", mouse.cy)
+		print("[DEBUG] Left-clicked at ", mouse.cx, ",", mouse.cy, "; (" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
+		for i in range(len(map1.alstObject[mouse.cx][mouse.cy] )):
+			print(map1.alstObject[mouse.cx][mouse.cy][i].getName())
 	if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
 		return "code:MOUSE"
 #END handle_keys()
@@ -105,12 +108,45 @@ def handle_keys(key, mouse, inMap):
 '''
 main loop
 '''
+#test objects
+wall = Wall()
+floor = Floor()
+enemy = Enemy()
+player = Player()
+item1 = ShieldConsumable()
+item2 = HealthConsumable()
+item3 = Ammo()
+portal = Portal()
+gateOpen = GateOpen()
+gateClosed = GateClosed()
+map1.addObject(wall, 0, 0)
+map1.addObject(floor, 1, 0)
+map1.addObject(enemy, 2, 0)
+map1.addObject(player, 3, 0)
+map1.addObject(item1, 4, 0)
+map1.addObject(wall, 6, 2)
+map1.addObject(floor, 7, 2)
+map1.addObject(enemy, 8, 2)
+map1.addObject(player, 9, 2)
+map1.addObject(item1, 10, 2)
 while not tcod.console_is_window_closed():
 	tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
 	
 	for y in range(MAP_HEIGHT):
 		for x in range(MAP_WIDTH):
-			tcod.console_put_char_ex(console, x, y, map1.alstObject[x][y][map1.top(x, y)], tcod.black, tcod.white)
+# 			tcod.console_put_char_ex(console, x, y, map1.alstObject[x][y][map1.top(x, y)], tcod.black, tcod.white)
+# 			print(map1.alstObject[x][y][map1.top(x, y)])
+			tcod.console_put_char_ex(console, x, y, map1.alstObject[x][y][map1.top(x, y)].getSymbol(), map1.alstObject[x][y][map1.top(x, y)].getBGColor(), map1.alstObject[x][y][map1.top(x, y)].getFGColor() )
+# 	tcod.console_put_char_ex(console, 0, 0, wall.getSymbol(), wall.getBGColor(), wall.getFGColor())
+# 	tcod.console_put_char_ex(console, 1, 0, floor.getSymbol(), floor.getBGColor(), floor.getFGColor())
+# 	tcod.console_put_char_ex(console, 2, 0, enemy.getSymbol(), enemy.getBGColor(), enemy.getFGColor())
+# 	tcod.console_put_char_ex(console, 3, 0, player.getSymbol(), player.getBGColor(), player.getFGColor())
+	tcod.console_put_char_ex(console, 4, 0, item1.getSymbol(), item1.getBGColor(), item1.getFGColor())
+	tcod.console_put_char_ex(console, 5, 0, item2.getSymbol(), item2.getBGColor(), item2.getFGColor())
+	tcod.console_put_char_ex(console, 6, 0, item3.getSymbol(), item3.getBGColor(), item3.getFGColor())
+	tcod.console_put_char_ex(console, 7, 0, portal.getSymbol(), portal.getBGColor(), portal.getFGColor())
+	tcod.console_put_char_ex(console, 8, 0, gateOpen.getSymbol(), gateOpen.getBGColor(), gateOpen.getFGColor())
+	tcod.console_put_char_ex(console, 9, 0, gateClosed.getSymbol(), gateClosed.getBGColor(), gateClosed.getFGColor())
 	tcod.console_flush()
 # 	tcod.console_blit(console, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 	
@@ -118,7 +154,8 @@ while not tcod.console_is_window_closed():
 # 	bTest = handle_event(mouse)
 	if (strCode == "code:MOUSE"):
 		tcod.console_set_default_foreground(console, tcod.white)
-		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)] + "   ")
+# 		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)] + "   ")
+		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
 # 		tcod.console_flush()
 	elif (strCode == "code:EXIT"):
 		break
