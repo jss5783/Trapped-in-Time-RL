@@ -1,7 +1,8 @@
 '''
 ---CHANGELOG---
 2019/03/29		(JSS5783)
-				Partially-implemented addObject. 
+				Partially-implemented addObject.
+				Added updatePlayerPosition.
 				
 2019/03/27		(JSS5783)
 				Now adds actual entities to map, instead of just characters.
@@ -16,13 +17,16 @@ from idlelib.iomenu import encoding
 import codecs
 from src.Entity import *
 from random import *
-from builtins import map
+from src.MessageLog import *
 
 '''
 Contains map-relevant data (visibility mapping, etc.).
 '''
 class Map:
-	
+	#TODO: add FoV map (and debug toggle, even if it means that everything is within FOV and all monsters come after the player), add passable?/translucent map(s)? (for easy "can move" checks and FoV calculations), add discovered map
+	#	also: add turn order, add second map, add movement code... here, I guess (probably belongs within InputListener). Timeline-jump.
+	#	if Player in same map and monster in FoV, then move toward player; else, move randomly (if letting "time pass" or wait (pass turn). Monsters always have full knowledge of their map (no extra FoV calculations).
+	#	add playerTimeline variable for now too and just use separate map objects. Base map (Floor/Wall) and non-Floor/Wall entities eventually, but whole maps for now, sans player in non-starting map.
 	def __init__(self, intInMapWidth, intInMapHeight, pathMap="", aObjMap=[]):
 		self.intWidth = intInMapWidth
 		self.intHeight = intInMapHeight
@@ -101,6 +105,27 @@ class Map:
 			print("entity " + entInEntity.getName() + " inserted above " + self.alstObject[x][y][self.top(x, y)].getName() )
 # 			self.alstObject[x][y].insert(self.top(x, y), entInEntity)
 			self.alstObject[x][y].append(entInEntity)
+# 		
+# 			    and self.alstObject[x][y][self.top(x, y)] is Player):	#if entInEntity is Player and top item in stack is already Player
+# 			self.alstObject[x][y][self.top(x, y)] = entInEntity	#replace old player with new player (if replacing for some reason, just in case)
+# 		elif (entInEntity is Player and self.alstObject[x][y][self.top(x, y)] is Player):	#insert item right under player
+# 			if (self.alstObject[x][y][self.top(x, y)] is Player):
+# 				self.intEntityPlacement -= 1
+# 		
+# 		#player, entity, wall, gate open/closed, portal
+# 		items
+# 		floor
+# 		
+# 		#then 
+# 		#else placementLocation = stack length - 
+# 		
+# 		
+# 		#elif floor
+# 		#if floor exists
+# 		#replace floor (though it should always be there)
+# 		#check if top object is wall/player/monster/etc
+# 		#if yes, then insert (top - 1) ((or copy-save old (top - 1) value, overwrite, and then append old value
+# 		#else append
 
 
 	'''
@@ -130,7 +155,7 @@ class Map:
 					elif (self.strCurrentLine[x] == "E"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(Enemy() )
-					elif (self.strCurrentLine[x] == "I"):	#place random item
+					elif (self.strCurrentLine[x] == "!"):	#place random item
 # 						if (rng.randint(0,2) == 0):
 # 							aMap[x][y].append(self.strCurrentLine[HealthConsumable() ] )
 # 						elif (rng.randint(0,2) == 1):
@@ -139,13 +164,13 @@ class Map:
 # 							aMap[x][y].append(self.strCurrentLine[Ammo() ] )
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(HealthConsumable() )
-					elif (self.strCurrentLine[x] == "*"):
+					elif (self.strCurrentLine[x] == "☼"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(Portal() )
-					elif (self.strCurrentLine[x] == "_"):
+					elif (self.strCurrentLine[x] == "▬"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(GateOpen() )
-					elif (self.strCurrentLine[x] == "="):
+					elif (self.strCurrentLine[x] == "╬"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(GateClosed() )
 					else:	#assuming that blank space/errors should all be Walls for now

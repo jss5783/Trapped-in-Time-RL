@@ -1,5 +1,10 @@
 '''
 ---CHANGELOG---
+2019/03/29		(JSS5783)
+				Debug command: click on a tile to print its contents to console.
+				Debug: placed test objects for various tests.
+				Added message log.
+
 2019/03/22		(JSS5783)
 				Map code implemented. Moving is no longer just painting characters onto the console.
 				Player can start anywhere in map. Player can no longer go out of map bounds.
@@ -25,9 +30,10 @@ import tcod
 from src.Map import *
 from src.constants import *
 from src.Entity import *
+from src.MessageLog import *
 
 #declaration and initialization
-map1 = Map(MAP_WIDTH, MAP_HEIGHT, "../resources/map.txt")
+map1 = Map(MAP_WIDTH, MAP_HEIGHT, "../resources/L01_T1_80x45.txt")
 
 #setting up console: set font, create main console, set FPS cap
 tcod.console_set_custom_font(FONT, tcod.FONT_TYPE_GREYSCALE | tcod.FONT_LAYOUT_CP437)
@@ -85,9 +91,10 @@ def handle_keys(key, mouse, inMap):
 		for y in range(map1.intPlayerY - 1, map1.intPlayerY + 2):
 			for x in range(map1.intPlayerX - 1, map1.intPlayerX + 2):
 				print(map1.alstObject[x][y][map1.top(x, y)] )
-				if (map1.alstObject[x][y][map1.top(x, y)] != "." and map1.alstObject[x][y][map1.top(x, y)] != "@"):
+				#TODO: if timelines use the same overall layout, add Wall+Gate (open AND closed) to checks. Other timeline: "has Enemy, item, or even Portal?"
+				if (type(map1.alstObject[x][y][map1.top(x, y)]) != Floor and type(map1.alstObject[x][y][map1.top(x, y)]) != Player):
 					bIsSafe = False
-				if (map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)] != "." and map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)] != "@"):
+				if (type(map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)]) != Floor and type(map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)]) != Player):
 					bIsBlocked = True
 		print("[DEBUG] bIsSafe:", bIsSafe, "| bIsBlocked:", bIsBlocked)
 	elif key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
@@ -129,6 +136,9 @@ map1.addObject(floor, 7, 2)
 map1.addObject(enemy, 8, 2)
 map1.addObject(player, 9, 2)
 map1.addObject(item1, 10, 2)
+log = MessageLog()
+# tcod.console.Console.default_bg = BLACK
+# tcod.console.Console.default_fg = WHITE
 while not tcod.console_is_window_closed():
 	tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
 	
@@ -137,10 +147,14 @@ while not tcod.console_is_window_closed():
 # 			tcod.console_put_char_ex(console, x, y, map1.alstObject[x][y][map1.top(x, y)], tcod.black, tcod.white)
 # 			print(map1.alstObject[x][y][map1.top(x, y)])
 			tcod.console_put_char_ex(console, x, y, map1.alstObject[x][y][map1.top(x, y)].getSymbol(), map1.alstObject[x][y][map1.top(x, y)].getBGColor(), map1.alstObject[x][y][map1.top(x, y)].getFGColor() )
+			log.printLog(console)
 # 	tcod.console_put_char_ex(console, 0, 0, wall.getSymbol(), wall.getBGColor(), wall.getFGColor())
 # 	tcod.console_put_char_ex(console, 1, 0, floor.getSymbol(), floor.getBGColor(), floor.getFGColor())
 # 	tcod.console_put_char_ex(console, 2, 0, enemy.getSymbol(), enemy.getBGColor(), enemy.getFGColor())
 # 	tcod.console_put_char_ex(console, 3, 0, player.getSymbol(), player.getBGColor(), player.getFGColor())
+	tcod.console.Console.rect(console, 0, MAP_HEIGHT, STATUS_WIDTH, STATUS_HEIGHT, True, 0)
+	tcod.console.Console.rect(console, MAP_WIDTH - MESSAGE_WIDTH, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True, 0)
+	log.printLog(console)
 	tcod.console_put_char_ex(console, 4, 0, item1.getSymbol(), item1.getBGColor(), item1.getFGColor())
 	tcod.console_put_char_ex(console, 5, 0, item2.getSymbol(), item2.getBGColor(), item2.getFGColor())
 	tcod.console_put_char_ex(console, 6, 0, item3.getSymbol(), item3.getBGColor(), item3.getFGColor())

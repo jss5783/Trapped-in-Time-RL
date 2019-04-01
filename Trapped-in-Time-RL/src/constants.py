@@ -1,5 +1,8 @@
 '''
 ---CHANGELOG---
+2019/03/31		(JSS5783)
+				Adjusted some colors.
+
 2019/03/27		(JSS5783)
 				Added colors. Added STATUS/MESSAGE.
 
@@ -24,7 +27,13 @@ WHITE = tcod.Color(250,250,250)
 BLACK = tcod.Color(5,5,5)
 GRAY_DARK = tcod.Color(100,100,100)
 GRAY_LIGHT = tcod.Color(192,192,192)
-ORANGE_DARK = tcod.Color(165,100,15)
-ORANGE_LIGHT = tcod.Color(245,215,175)
+RED_DARK = tcod.Color(165,50,50)
+RED_LIGHT = tcod.Color(245,175,175)
+ORANGE_DARK = tcod.Color(165,90,15)
+ORANGE_LIGHT = tcod.Color(245,185,105)
+GREEN_DARK = tcod.Color(50,165,50)
+GREEN_LIGHT = tcod.Color(175,245,175)
 BLUE_DARK = tcod.Color(15,100,165)
-BLUE_LIGHT = tcod.Color(175,215,245)
+BLUE_LIGHT = tcod.Color(100,200,245)
+MAGENTA_DARK = tcod.Color(165,50,165)
+MAGENTA_LIGHT = tcod.Color(245,175,245)
