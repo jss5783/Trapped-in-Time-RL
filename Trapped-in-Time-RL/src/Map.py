@@ -18,6 +18,7 @@ import codecs
 from src.Entity import *
 from random import *
 from src.MessageLog import *
+from src.Item import *
 
 '''
 Contains map-relevant data (visibility mapping, etc.).
@@ -164,6 +165,7 @@ class Map:
 # 							aMap[x][y].append(self.strCurrentLine[Ammo() ] )
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(HealthConsumable() )
+						blaster = Item(x, y, "Blaster", 4)
 					elif (self.strCurrentLine[x] == "☼"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(Portal() )
