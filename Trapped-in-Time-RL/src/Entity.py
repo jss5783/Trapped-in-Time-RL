@@ -1,5 +1,8 @@
 '''
 ---CHANGELOG---
+2019/04/05		(JSS5783)
+				Finished reworking code. Creating a new Entity type in code is simpler now.
+
 2019/03/29		(JSS5783)
 				Added strict typing as a test.
 
@@ -8,111 +11,152 @@
 				Hard-coded entities.
 '''
 
-from src.constants import * 
+
+from src.constants import *
+
 
 class Entity:
-# 	def __init__(self, cInSymbol, strInName, clrInForeground, clrInBackground=None):
-	def __init__(self):
-		self.cSymbol : char = '?'				#experimenting with static types here, since these variables are so predictable
-		self.strName : str = "UNDEFINED (please report to developers)"			#also, ear-searing defaults in case of generation errors
-		self.clrForeground : MAGENTA_DARK
-		self.clrBackground : GREEN_DARK
-		self.bIsSolid : bool
-		self.bIsTranslucent : bool	#or translucent
+	def __init__(self, cInSymbol='?', strInName="UNDEFINED (please report to developers)", clrInForeground=MAGENTA_DARK, clrInBackground=GREEN_DARK, bInIsSolid=True, bInIsTranslucent=False):
+		'''
+			Entity constructor.
+			Uses ear-searing default colors to help identify generation errors.
+		'''
+		self.cSymbol = cInSymbol
+		self.strName = strInName
+		self.clrForeground = clrInForeground
+		self.clrBackground = clrInBackground
+		self.bIsSolid = bInIsSolid
+		self.bIsTransparent = bInIsTranslucent
+	#END __init__(self, cInSymbol='?', strInName="UNDEFINED (please report to developers)", clrInForeground=MAGENTA_DARK, clrInBackground=GREEN_DARK, bInIsSolid=True, bInIsTranslucent=False)
+	
 	
 	def setSymbol(self, cInSymbol):
+		'''
+		Set Entity symbol.
+		The symbol is the character used to represent an Entity on the screen, and must be found in CP437 (https://en.wikipedia.org/wiki/Code_page_437).
+		'''
 		self.cSymbol = cInSymbol
+	#END setSymbol(self, cInSymbol)
 		
 	def getSymbol(self):
+		'''
+		Get Entity symbol.
+		The symbol is the character used to represent an Entity on the screen.
+		'''
 		return self.cSymbol
+	#END getSymbol(self)
+	
 	
 	def setName(self, strInName):
+		'''
+		Set Entity name.
+		'''
 		self.strName = strInName
+	#END setName(self, strInName)
 	
 	def getName(self):
+		'''
+		Get Entity name.
+		'''
 		return self.strName
+	#END getName(self)
+
 
 	def setFGColor(self, clrInForeground):
+		'''
+		Set Entity foreground color (text color).
+		'''
 		self.clrForeground = clrInForeground
+	#END setFGColor(self, clrInForeground)
 	
 	def getFGColor(self):
+		'''
+		Get Entity foreground color (text color).
+		'''
 		return self.clrForeground
+	#END getFGColor(self)
+	
 	
 	def setBGColor(self, clrInBackground):
+		'''
+		Set Entity background color (color behind text).
+		'''
 		self.clrBackground = clrInBackground
+	#END setBGColor(self, clrInBackground)
 	
 	def getBGColor(self):
+		'''
+		Get Entity background color (color behind text).
+		'''
 		return self.clrBackground
+	#END getBGColor(self)
 #END Entity
 
 
 class Wall(Entity):
-	def __init__(self, cInSymbol='#', strInName="wall", clrInForeground=WHITE, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__('#', "wall", WHITE, BLACK, True, False)
+#END Wall(Entity)
+
 
 class Floor(Entity):
-	def __init__(self, cInSymbol='.', strInName="floor", clrInForeground=GRAY_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__('.', "floor", GRAY_LIGHT, BLACK, False, True)
+#END Floor(Entity)
+
 
 class Enemy(Entity):
-	def __init__(self, cInSymbol='E', strInName="enemy", clrInForeground=ORANGE_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__('E', "enemy", ORANGE_LIGHT, BLACK, True, True)
+#END Enemy(Entity)
+
 
 class Player(Entity):
-	def __init__(self, cInSymbol='@', strInName="player", clrInForeground=WHITE, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__('@', "player", WHITE, BLACK, True, True)
+#END Player(Entity)
+
 
 class ShieldConsumable(Entity):
-	def __init__(self, cInSymbol='¿', strInName="shield repair kit", clrInForeground=BLUE_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__('¿', "shield repair kit", BLUE_LIGHT, BLACK, False, True)
+#END ShieldConsumable(Entity)
+
 
 class HealthConsumable(Entity):
-	def __init__(self, cInSymbol='¡', strInName="medical kit", clrInForeground=BLUE_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__('¡', "medical kit", BLUE_LIGHT, BLACK, False, True)
+#END HealthConsumable(Entity)
+
 
 class Ammo(Entity):
-	def __init__(self, cInSymbol=',', strInName="pistol bullet", clrInForeground=BLUE_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	def __init__(self):
+		super().__init__(',', "pistol bullet", BLUE_LIGHT, BLACK, False, True)
+#END Ammo(Entity)
+
 
 class Portal(Entity):
-	def __init__(self, cInSymbol='☼', strInName="portal", clrInForeground=BLUE_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	'''
+	Level's end.
+	'''
+	def __init__(self):
+		super().__init__('☼', "portal", BLUE_LIGHT, BLACK, True, True)
+#END Portal(Entity)
+
 
 class GateOpen(Entity):
-	def __init__(self, cInSymbol='▬', strInName="gate (open)", clrInForeground=BLUE_LIGHT, clrInBackground=BLACK):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
+	'''
+	Open state of gate.
+	'''
+	def __init__(self):
+		super().__init__('▬', "gate (open)", BLUE_LIGHT, BLACK, False, True)
+#END GateOpen(Entity)
+
 
 class GateClosed(Entity):
-	def __init__(self, cInSymbol='╬', strInName="gate (closed)", clrInForeground=BLACK, clrInBackground=ORANGE_LIGHT):
-		self.cSymbol = cInSymbol
-		self.strName = strInName
-		self.clrForeground = clrInForeground
-		self.clrBackground = clrInBackground
-
+	'''
+	Closed state of gate.
+	'''
+	def __init__(self):
+		super().__init__('╬', "gate (closed)", BLACK, ORANGE_LIGHT, True, False)
+#END GateClosed(Entity)

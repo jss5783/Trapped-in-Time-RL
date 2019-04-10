@@ -1,5 +1,14 @@
 '''
 ---CHANGELOG---
+2019/04/10		(JSS5783)
+				Non-debug seed now uses system clock for default.
+
+2019/04/06		(JSS5783)
+				Added FOV_RADIUS.
+
+2019/04/05		(JSS5783)
+				Added DEBUG_MODE to control console output/RNG seed for debugging.
+
 2019/03/31		(JSS5783)
 				Adjusted some colors.
 
@@ -10,18 +19,18 @@
 				constants.py created. Constants moved.
 '''
 
-import tcod
+import tcod, datetime
 
-#---CONSTANTS---
-SCREEN_WIDTH = 80		#for entire game; screen (game window) has multiple viewports (consoles)
-SCREEN_HEIGHT = 50
-MAP_WIDTH = SCREEN_WIDTH
-MAP_HEIGHT = SCREEN_HEIGHT - 5
-STATUS_WIDTH = 30
-STATUS_HEIGHT = SCREEN_HEIGHT - MAP_HEIGHT
-MESSAGE_WIDTH = SCREEN_WIDTH - STATUS_WIDTH
-MESSAGE_HEIGHT = STATUS_HEIGHT
-FPS_CAP = 20
+
+SCREEN_WIDTH : int = 80		#for entire game; screen (game window) has multiple viewports (consoles)
+SCREEN_HEIGHT : int = 50
+MAP_WIDTH : int = SCREEN_WIDTH
+MAP_HEIGHT : int = SCREEN_HEIGHT - 5
+STATUS_WIDTH : int = 30
+STATUS_HEIGHT : int = SCREEN_HEIGHT - MAP_HEIGHT
+MESSAGE_WIDTH : int = SCREEN_WIDTH - STATUS_WIDTH
+MESSAGE_HEIGHT : int = STATUS_HEIGHT
+FPS_CAP : int = 20
 FONT = '../resources/terminal16x16_gs_ro.png'
 WHITE = tcod.Color(250,250,250)
 BLACK = tcod.Color(5,5,5)
@@ -37,3 +46,9 @@ BLUE_DARK = tcod.Color(15,100,165)
 BLUE_LIGHT = tcod.Color(100,200,245)
 MAGENTA_DARK = tcod.Color(165,50,165)
 MAGENTA_LIGHT = tcod.Color(245,175,245)
+DEBUG_MODE = True
+if (DEBUG_MODE):	#TODO: use system datetime for non-debug value
+	SEED = 5
+else:
+	SEED = datetime.datetime.now()
+FOV_RADIUS = 3
