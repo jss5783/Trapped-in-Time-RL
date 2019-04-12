@@ -1,9 +1,0 @@
-class Item(Entity):
-	def __init__(self, x, y, strName, ammo):
-	        self.x = x
-	        self.y = y
-	        self.cSymbol = cSymbol
-	        self.clrBackground = clrBackground
-	        self.clrForeground = clrForeground
-	        self.strName = strName
-	        self.ammo = ammo

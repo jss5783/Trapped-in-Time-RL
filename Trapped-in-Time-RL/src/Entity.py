@@ -68,11 +68,13 @@ class Enemy(Entity):
 		self.clrBackground = clrInBackground
 
 class Player(Entity):
-	def __init__(self, cInSymbol='@', strInName="player", clrInForeground=WHITE, clrInBackground=BLACK):
+	def __init__(self, cInSymbol='@', strInName="player", clrInForeground=WHITE, clrInBackground=BLACK, hp=1, damage=0):
 		self.cSymbol = cInSymbol
 		self.strName = strInName
 		self.clrForeground = clrInForeground
 		self.clrBackground = clrInBackground
+		self.hp = hp
+		self.damage = damage
 
 class ShieldConsumable(Entity):
 	def __init__(self, cInSymbol='¿', strInName="shield repair kit", clrInForeground=BLUE_LIGHT, clrInBackground=BLACK):

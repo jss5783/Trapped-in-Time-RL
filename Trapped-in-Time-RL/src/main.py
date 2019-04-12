@@ -26,6 +26,7 @@ Starting code based on Jotaf's roguelike tutorial
 
 #imports
 import tcod
+import tcod.event
 # from InputListener import *
 from src.Map import *
 from src.constants import *
@@ -97,7 +98,40 @@ def handle_keys(key, mouse, inMap):
 				if (type(map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)]) != Floor and type(map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)]) != Player):
 					bIsBlocked = True
 		print("[DEBUG] bIsSafe:", bIsSafe, "| bIsBlocked:", bIsBlocked)
-	elif key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
+	
+	'''
+	BRYAN: begin code add/change
+	Uses the 'g' key to pick up an item.  Checks all items in the game to see if 
+	they have the same position on the map as the player.  If there is an item there
+	the item is placed into the inventory. Print commands are for testing only and will
+	eventually be removed.  Still need to remove item and icon from map position.
+	Had to change elif to if because of syntax error caused by commenting
+	'''
+	
+	if key.text == "g": 
+		for item in ITEMS:
+			if item.x == map1.intPlayerX and item.y == map1.intPlayerY:
+				INVENTORY.append(item)
+				print(INVENTORY)
+				print(item.strName)
+				if item.strName == "Fisto Kit":
+					map1.Player.damage = item.damage
+				elif item.strName == "Shield":
+					for i in item.charges:
+						if map1.Player.hp < item.maxcharges:
+							map1.Player.hp += 1
+				print(map1.Player.hp, map1Player.damage)
+				break
+				
+		else:
+			print("nothing here")
+			print(map1.intPlayerX, item.x)
+			print(map1.intPlayerY, item.y)
+	
+	'''
+	Bryan: end code add/change
+	'''
+	if key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
 		tcod.console_set_fullscreen(not tcod.console_is_fullscreen() )
 	elif key.vk == tcod.KEY_ESCAPE:	#exit game
 		return "code:EXIT"
@@ -107,6 +141,17 @@ def handle_keys(key, mouse, inMap):
 		print("[DEBUG] Left-clicked at ", mouse.cx, ",", mouse.cy, "; (" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
 		for i in range(len(map1.alstObject[mouse.cx][mouse.cy] )):
 			print(map1.alstObject[mouse.cx][mouse.cy][i].getName())
+	if mouse.rbutton_pressed == True:
+		print("right clicked")
+		for item in INVENTORY:
+			print(item.strName)
+			if item.strName == "Blaster":
+				print("Blaster")
+				for enemy in ENEMIES:
+					if enemy.x == mouse.cx and enemy.y == mouse.cy:
+						useBlaster(enemy, item)
+						print(enemy.hp)
+						print(item.charges)
 	if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
 		return "code:MOUSE"
 #END handle_keys()

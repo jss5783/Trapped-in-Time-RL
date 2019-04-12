@@ -37,3 +37,6 @@ BLUE_DARK = tcod.Color(15,100,165)
 BLUE_LIGHT = tcod.Color(100,200,245)
 MAGENTA_DARK = tcod.Color(165,50,165)
 MAGENTA_LIGHT = tcod.Color(245,175,245)
+ITEMS = []		#Bryan: Added ITEMS list to store all items in game
+INVENTORY = []	#Bryan: Added INVENTORY list to handle items currently held by player
+ENEMIES = []  	#Bryan: Added ENEMIES list to store all enemies in game

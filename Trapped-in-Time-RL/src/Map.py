@@ -19,6 +19,7 @@ from src.Entity import *
 from random import *
 from src.MessageLog import *
 from src.Item import *
+from src.item_functions import *
 
 '''
 Contains map-relevant data (visibility mapping, etc.).
@@ -156,16 +157,36 @@ class Map:
 					elif (self.strCurrentLine[x] == "E"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(Enemy() )
+						enemy = Baddie(x, y, 4)
+						ENEMIES.append(enemy)
 					elif (self.strCurrentLine[x] == "!"):	#place random item
-# 						if (rng.randint(0,2) == 0):
-# 							aMap[x][y].append(self.strCurrentLine[HealthConsumable() ] )
-# 						elif (rng.randint(0,2) == 1):
-# 							aMap[x][y].append(self.strCurrentLine[ShieldConsumable() ] )
-# 						elif (rng.randint(0,2) == 2):
-# 							aMap[x][y].append(self.strCurrentLine[Ammo() ] )
+						randItem = randint(0,2)
+						if randItem == 0:
+							item = Item(x, y, "Blaster", 4, 4, 2)
+							ITEMS.append(item)
+							print(item.strName)
+						elif randItem == 1:
+							item = Item(x, y, "Fisto Kit", 2, 2, 5)
+							ITEMS.append(item)
+							print(item.strName)
+						elif randItem == 2:
+							item = Item(x, y, "Shield", 5, 5)
+							ITEMS.append(item)
+							print(item.strName)
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(HealthConsumable() )
-						blaster = Item(x, y, "Blaster", 4)
+						'''
+						BRYAN: begin code add/change
+						create blaster item for every item icon on the map and put each into a list of items.
+						will add other items later and place random item at each icon.
+						print command is for testing only
+						'''
+# 						item = Item(x, y, "Blaster", 4, 4, 2)
+# 						ITEMS.append(item)
+# 						print(item.strName)
+						'''
+						BRYAN: end code add/change
+						'''
 					elif (self.strCurrentLine[x] == "☼"):
 						self.aMap[x][y].append(Floor() )
 						self.aMap[x][y].append(Portal() )
