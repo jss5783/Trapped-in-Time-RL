@@ -48,7 +48,10 @@ import codecs
 from src.Entity import *
 from random import *
 from src.MessageLog import *
+from src.Item import *
+from src.item_functions import *
 from tcod.constants import FOV_BASIC
+
 
 
 	#	TODO: add turn order, action code here?, I guess (probably belongs within InputListener).
@@ -136,6 +139,9 @@ class Map:
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
+            enemy = Baddie(x, y, 4)
+						ENEMIES.append(enemy)
+            
 					elif (self.strCurrentLine[x] == "!"):	#place random item
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
 						self.intResult = self.rng.randint(0,2)
@@ -146,6 +152,20 @@ class Map:
 							self.aLstEntities[x][y][intInTimeline].append(ShieldConsumable() )
 						elif (self.intResult == 2):
 							self.aLstEntities[x][y][intInTimeline].append(Ammo() )
+              
+#             randItem = randint(0,2)
+# 						if randItem == 0:
+# 							item = Item(x, y, "Blaster", 4, 4, 2)
+# 							ITEMS.append(item)
+# 							print(item.strName)
+# 						elif randItem == 1:
+# 							item = Item(x, y, "Fisto Kit", 2, 2, 5)
+# 							ITEMS.append(item)
+# 							print(item.strName)
+# 						elif randItem == 2:
+# 							item = Item(x, y, "Shield", 5, 5)
+# 							ITEMS.append(item)
+# 							print(item.strName)
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
@@ -323,6 +343,7 @@ class Map:
 # 		#check if top object is wall/player/monster/etc
 # 		#if yes, then insert (top - 1) ((or copy-save old (top - 1) value, overwrite, and then append old value
 # 		#else append
+
 
 
 	def updatePlayerPosition(self, x, y, z=-1):

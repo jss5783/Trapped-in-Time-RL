@@ -27,6 +27,7 @@
 
 #imports
 import tcod
+import tcod.event
 # from InputListener import *
 from src.Map import *
 from src.constants import *
@@ -37,6 +38,137 @@ from tcod.libtcodpy import console_set_char_foreground
 from tcod import event
 
 
+# <<<<<<< bryan
+# 	if key.vk == tcod.KEY_UP:
+# # 		print(inMap.alstObject[0][0][0].append("?")
+# # 		if not inMap.isEmptyTile(intPlayerX, intPlayerY):
+# # 			inMap.alstObject[intPlayerX][intPlayerY].pop(inMap.top(intPlayerX,intPlayerY))
+# # 		inMap.alstObject[intPlayerX][intPlayerY - 1].append("@")
+# # 		intPlayerY -= 1
+# 		if ((map1.intPlayerY - 1) >= 0):
+# 			map1.updatePlayerPosition(map1.intPlayerX, map1.intPlayerY - 1)
+# 	elif key.vk == tcod.KEY_DOWN:
+# # 		if not inMap.isEmptyTile(intPlayerX, intPlayerY):
+# # 			inMap.alstObject[intPlayerX][intPlayerY].pop(inMap.top(intPlayerX,intPlayerY))
+# # 		inMap.alstObject[intPlayerX][intPlayerY + 1].append("@")
+# # 		intPlayerY += 1
+# 		if ((map1.intPlayerY + 1) < MAP_HEIGHT):
+# 			map1.updatePlayerPosition(map1.intPlayerX, map1.intPlayerY + 1)
+# 	elif key.vk == tcod.KEY_LEFT:
+# # 		if not inMap.isEmptyTile(map1.intPlayerX, map1.intPlayerY):
+# # 			inMap.alstObject[intPlayerX][intPlayerY].pop(inMap.top(intPlayerX,intPlayerY))
+# # 		inMap.alstObject[intPlayerX - 1][intPlayerY].append("@")
+# # 		intPlayerX -= 1
+# 		if ((map1.intPlayerX - 1) >= 0):
+# 			map1.updatePlayerPosition(map1.intPlayerX - 1, map1.intPlayerY)
+# 	elif key.vk == tcod.KEY_RIGHT:
+# # 		if not inMap.isEmptyTile(intPlayerX, intPlayerY):
+# # 			inMap.alstObject[intPlayerX][intPlayerY].pop(inMap.top(intPlayerX,intPlayerY))
+# # 		inMap.alstObject[intPlayerX + 1][intPlayerY].append("@")
+# # 		intPlayerX += 1
+# 		if ((map1.intPlayerX + 1) < MAP_WIDTH):
+# 			print(map1.intPlayerX + 1, map1.intPlayerY)
+# 			map1.updatePlayerPosition(map1.intPlayerX + 1, map1.intPlayerY)
+# 	elif key.vk == tcod.KEY_SPACE:	#TODO: time travel; checks for collision.
+# 		bIsSafe = True
+# 		bIsBlocked = False
+# 		for y in range(map1.intPlayerY - 1, map1.intPlayerY + 2):
+# 			for x in range(map1.intPlayerX - 1, map1.intPlayerX + 2):
+# 				print(map1.alstObject[x][y][map1.top(x, y)] )
+# 				#TODO: if timelines use the same overall layout, add Wall+Gate (open AND closed) to checks. Other timeline: "has Enemy, item, or even Portal?"
+# 				if (type(map1.alstObject[x][y][map1.top(x, y)]) != Floor and type(map1.alstObject[x][y][map1.top(x, y)]) != Player):
+# 					bIsSafe = False
+# 				if (type(map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)]) != Floor and type(map1.alstObject[map1.intPlayerX][map1.intPlayerY][map1.top(map1.intPlayerX, map1.intPlayerY)]) != Player):
+# 					bIsBlocked = True
+# 		print("[DEBUG] bIsSafe:", bIsSafe, "| bIsBlocked:", bIsBlocked)
+	
+# 	'''
+# 	BRYAN: begin code add/change
+# 	Uses the 'g' key to pick up an item.  Checks all items in the game to see if 
+# 	they have the same position on the map as the player.  If there is an item there
+# 	the item is placed into the inventory. Print commands are for testing only and will
+# 	eventually be removed.  Still need to remove item and icon from map position.
+# 	Had to change elif to if because of syntax error caused by commenting
+# 	'''
+	
+# 	if key.text == "g": 
+# 		for item in ITEMS:
+# 			if item.x == map1.intPlayerX and item.y == map1.intPlayerY:
+# 				INVENTORY.append(item)
+# 				print(INVENTORY)
+# 				print(item.strName)
+# 				if item.strName == "Fisto Kit":
+# 					map1.Player.damage = item.damage
+# 				elif item.strName == "Shield":
+# 					for i in item.charges:
+# 						if map1.Player.hp < item.maxcharges:
+# 							map1.Player.hp += 1
+# 				print(map1.Player.hp, map1Player.damage)
+# 				break
+				
+# 		else:
+# 			print("nothing here")
+# 			print(map1.intPlayerX, item.x)
+# 			print(map1.intPlayerY, item.y)
+	
+# 	'''
+# 	Bryan: end code add/change
+# 	'''
+# 	if key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
+# 		tcod.console_set_fullscreen(not tcod.console_is_fullscreen() )
+# 	elif key.vk == tcod.KEY_ESCAPE:	#exit game
+# 		return "code:EXIT"
+
+# 	#mouse-handling
+# 	if mouse.lbutton_pressed == True:
+# 		print("[DEBUG] Left-clicked at ", mouse.cx, ",", mouse.cy, "; (" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
+# 		for i in range(len(map1.alstObject[mouse.cx][mouse.cy] )):
+# 			print(map1.alstObject[mouse.cx][mouse.cy][i].getName())
+# 	if mouse.rbutton_pressed == True:
+# 		print("right clicked")
+# 		for item in INVENTORY:
+# 			print(item.strName)
+# 			if item.strName == "Blaster":
+# 				print("Blaster")
+# 				for enemy in ENEMIES:
+# 					if enemy.x == mouse.cx and enemy.y == mouse.cy:
+# 						useBlaster(enemy, item)
+# 						print(enemy.hp)
+# 						print(item.charges)
+# 	if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
+# 		return "code:MOUSE"
+# #END handle_keys()
+
+
+# '''
+# main loop
+# '''
+# #test objects
+# wall = Wall()
+# floor = Floor()
+# enemy = Enemy()
+# player = Player()
+# item1 = ShieldConsumable()
+# item2 = HealthConsumable()
+# item3 = Ammo()
+# portal = Portal()
+# gateOpen = GateOpen()
+# gateClosed = GateClosed()
+# map1.addObject(wall, 0, 0)
+# map1.addObject(floor, 1, 0)
+# map1.addObject(enemy, 2, 0)
+# map1.addObject(player, 3, 0)
+# map1.addObject(item1, 4, 0)
+# map1.addObject(wall, 6, 2)
+# map1.addObject(floor, 7, 2)
+# map1.addObject(enemy, 8, 2)
+# map1.addObject(player, 9, 2)
+# map1.addObject(item1, 10, 2)
+# log = MessageLog()
+# # tcod.console.Console.default_bg = BLACK
+# # tcod.console.Console.default_fg = WHITE
+# while not tcod.console_is_window_closed():
+# 	tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
 def main():
 	'''
 	main loop

@@ -112,9 +112,15 @@ class Enemy(Entity):
 
 
 class Player(Entity):
-	def __init__(self):
+
+	def __init__(self, hp=1, damage=0):
 		super().__init__('@', "player", WHITE, BLACK, True, True)
+    self.hp = hp
+		self.damage = damage
+
+		
 #END Player(Entity)
+
 
 
 class ShieldConsumable(Entity):
