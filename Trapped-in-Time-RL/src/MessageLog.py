@@ -18,8 +18,9 @@ class MessageLog:
 		print(type(self.alstMessageLog))
 # 		self.alstMessageLog.append("Test String 1")
 # 		self.alstMessageLog.append("The quick brown fox jumped over the lazy dog.")
-		self.addMessage("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()")		#really long test message
+		self.addMessage("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()")		#really long test message
 		#eventually: Messages with colors
+
 
 	def addMessage(self, strInNewMessage):
 		#TODO: trim log once in a while to delete old messages (maybe use a sentinel value)
@@ -44,6 +45,7 @@ class MessageLog:
 		else:
 			self.alstMessageLog.append(strInNewMessage)
 	
+	
 	def printLog(self, inConsole):
 		#take most recent string. how long? split according to intWidth, count # of resulting lines.
 		#print from bottom up, I guess.
@@ -53,3 +55,18 @@ class MessageLog:
 			y += 1
 	# 			console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
 	# 			print("message log:", MAP_WIDTH, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, self.alstMessageLog[i])
+
+'''
+	LOG:
+		1
+		2
+		3
+	oldLog[] = LOG
+	newMessage[]: abc (too long for 1 line)
+	log[] = oldLog + newMessage.split
+		log is new/rewritten every time function is called
+	if log.len <= 5
+		print from 0 to 4
+	else
+		print from log.len - 4 to log.len - 1
+'''
