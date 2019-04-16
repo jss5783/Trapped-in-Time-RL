@@ -55,6 +55,8 @@ import codecs
 from src.Entity import *
 from random import *
 from src.MessageLog import *
+from src.Item import *
+from src.item_functions import *
 from tcod.constants import FOV_BASIC
 
 
@@ -143,9 +145,26 @@ class Map:
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
+						enemy = Baddie(x, y, 4)
+						ENEMIES.append(enemy)
+						
 					elif (self.strCurrentLine[x] == "!"):	#place random item
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
 						self.intResult = self.rng.randint(0,2)
+						
+#             			randItem = randint(0,2)
+# 						if randItem == 0:
+# 							item = Item(x, y, "Blaster", 4, 4, 2)
+# 							ITEMS.append(item)
+# 							print(item.strName)
+# 						elif randItem == 1:
+# 							item = Item(x, y, "Fisto Kit", 2, 2, 5)
+# 							ITEMS.append(item)
+# 							print(item.strName)
+# 						elif randItem == 2:
+# 							item = Item(x, y, "Shield", 5, 5)
+# 							ITEMS.append(item)
+# 							print(item.strName)
 							
 						if (self.intResult == 0):
 							self.aLstEntities[x][y][intInTimeline].append(HealthConsumable() )
@@ -584,3 +603,5 @@ class Map:
 		print(x, y, z, "top =", self.getTopEntity(x, y).getName(), "| walkable =", self.aTcodMaps[z].walkable[y][x], "| FoV =", self.aTcodMaps[z].fov[y][x], "| explored =", self.aBoolIsExplored[x][y][z], "| memory =", self.aSymbolMemory[x][y][z] )
 		for i in range(len(self.aLstEntities[x][y][z] ) ):
 			print("\t", self.aLstEntities[x][y][z][i].getName() )
+
+
