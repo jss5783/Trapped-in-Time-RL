@@ -116,14 +116,12 @@ class Enemy(Entity):
 
 
 class Player(Entity):
-
 	def __init__(self, hp=1, damage=0):
 		super().__init__('@', "player", WHITE, BLACK, True, True)
 		self.hp = hp
 		self.damage = damage
-
-		
 #END Player(Entity)
+
 
 
 
@@ -135,7 +133,6 @@ class Shield(Entity):
 		self.charges = charges
 		self.maxCharges = maxCharges
 		
-#END ShieldConsumable(Entity)
 
 
 class FistoKit(Entity):

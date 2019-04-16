@@ -1,7 +1,12 @@
 '''
 ---CHANGELOG---
+
 2019/04/16		(Bryan)
 				Added get "g" input handler
+
+2019/04/15:		(JSS5783)
+				Added entity add/remove tests to mouse controls.
+
 
 2019/04/10:		(JSS5783)
 				Moved tile-reporting code into Map.printTileContents().
@@ -87,8 +92,10 @@ class InputListener:
 		if mouse.lbutton_pressed == True:	#left-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
 				inMap.printTileContents(mouse.cx, mouse.cy, 0)
+				inMap.addEntityAt(HealthConsumable(), mouse.cx, mouse.cy)
 		if mouse.rbutton_pressed == True:	#right-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
+
 				inMap.printTileContents(mouse.cx, mouse.cy, 1)
 		#if mouse.rbutton_pressed == True:
 			print("right clicked")
@@ -102,4 +109,5 @@ class InputListener:
 							print(enemy.hp)
 							print(item.ammo)
 		
+
 	#END handle_keys(self, key, mouse, inMap)
