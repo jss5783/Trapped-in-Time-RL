@@ -1,5 +1,10 @@
+
 '''
 ---CHANGELOG---
+2019/04/16		(Bryan)
+				Randomly generate items on map at appropriate locations
+				Put in simple enemies with hp for item testing
+        
 2019/04/15:		(JSS5783)
 				Continued working on addEntityAt, getEntityAt, and getEntityIndexAt.
 
@@ -150,28 +155,23 @@ class Map:
 						
 					elif (self.strCurrentLine[x] == "!"):	#place random item
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.intResult = self.rng.randint(0,2)
-						
-#             			randItem = randint(0,2)
-# 						if randItem == 0:
-# 							item = Item(x, y, "Blaster", 4, 4, 2)
-# 							ITEMS.append(item)
-# 							print(item.strName)
-# 						elif randItem == 1:
-# 							item = Item(x, y, "Fisto Kit", 2, 2, 5)
-# 							ITEMS.append(item)
-# 							print(item.strName)
-# 						elif randItem == 2:
-# 							item = Item(x, y, "Shield", 5, 5)
-# 							ITEMS.append(item)
-# 							print(item.strName)
+						randItem = randint(0,2)
 							
-						if (self.intResult == 0):
-							self.aLstEntities[x][y][intInTimeline].append(HealthConsumable() )
-						elif (self.intResult == 1):
-							self.aLstEntities[x][y][intInTimeline].append(ShieldConsumable() )
-						elif (self.intResult == 2):
-							self.aLstEntities[x][y][intInTimeline].append(Ammo() )
+						if randItem == 0:
+							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y, 2, 2, 5) )
+							item = FistoKit(x, y, 2, 2, 5)
+							ITEMS.append(item)
+							print(item.strName)
+						elif randItem == 1:
+							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, 5, 5) )
+							item = Shield(x, y, 5, 5)
+							ITEMS.append(item)
+							print(item.strName)
+						elif randItem == 2:
+							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 4, 2) )
+							item = Blaster(x, y, 4, 4, 2)
+							ITEMS.append(item)
+							print(item.strName)
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
