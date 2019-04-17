@@ -1,7 +1,13 @@
 '''
 ---CHANGELOG---
+2019/04/17:		(JSS5783)
+				Added removeEntityAt.
+				addEntityAt, getEntityAt, getEntityIndexAt, and removeEntityAt all work now, with updating FoV.
+
+				
 2019/04/15:		(JSS5783)
 				Continued working on addEntityAt, getEntityAt, and getEntityIndexAt.
+
 
 2019/04/11:		(JSS5783)
 				Added addEntityAt, getEntityAt, and getEntityIndexAt.
@@ -207,6 +213,7 @@ class Map:
 
 	def getTopIndex(self, x, y, z=-1):
 		'''
+		getTopIndexAtTile
 		Returns top Entity's index at given coordinates.
 			(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
 		Otherwise, return floor tile.
@@ -224,17 +231,21 @@ class Map:
 	#END getTopIndex(self, x, y, z=-1):
 	
 	
-	def getEntityIndexAt(self, inEntityType, intInX, intInY, intInZ=-1):
+	def getEntityIndexAt(self, inEntityType : Entity, intInX, intInY, intInZ=-1):
 		'''
+			getEntityIndexAtTile
 			Finds the index of the given Entity type (e.g., HealthRestorative) in a tile and returns it.
 			TODO (real version): Handle duplicate Entity types (e.g., health pack #1, and then health pack #2 dropped). 
 		'''
 		if (intInZ == -1):
 			intInZ = self.getPlayerZ()
 		
-		for i in range(len(self.aLstEntities) ):
-			if isinstance(self.aLstEntities[intInX][intInY][intInZ][i], inEntityType):
+		self.intEntityIndex = 0
+		
+		for i in range(len(self.aLstEntities[intInX][intInY][intInZ]) ):
+			if isinstance(self.aLstEntities[intInX][intInY][intInZ][i], type(inEntityType) ):
 				self.intEntityIndex = i
+# 		print(self.intEntityIndex)
 		
 		return self.intEntityIndex
 	#END getEntityIndexAt(self, inEntityType, intInX, intInY, intInZ=-1)
@@ -242,10 +253,12 @@ class Map:
 	
 	def addEntityAt(self, inEntity, intInX, intInY, intInZ=-1, intInDropRadius=1):
 		'''
+			addEntityAtTile
 			Adds given Entity where appropriate in given tile. If Entity cannot be added for some reason in given tile, checks around the tile (default radius = 1 tile out) for an empty space in the same timeline to use instead.
 			TODO (real version): Drop items in random available space (in first free space when first implementing). Probably use a boolean canPlaceItem[x][y], pick until True (placeable) is found, and then use those random x and y values in aLstEntities[randX][randY][intPlayerZ].
 				Do multiple times/in a pattern for AoEs.
 			Return -1 if cannot add Entity.
+			TODO: add/remove blocking. Removed enemy = walkable.
 		'''
 		if (intInZ == -1):
 			intInZ = self.getPlayerZ()
@@ -259,9 +272,14 @@ class Map:
 			self.strInEntity = "CREATURE"	#creature
 		elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
 			self.strInEntity = "ITEM"	#items
-		elif isinstance(inEntity, Floor) or isinstance(inEntity, GateOpen):
-			self.strInEntity = "TERRAIN"	#floor or GateOpen (TODO (real version): separate this out, just in case of "Summon Gate" skill or something that might stack Gates.
+		elif isinstance(inEntity, GateOpen):
+			self.strInEntity = "TERRAIN"	#GateOpen
+		elif isinstance(inEntity, Floor):
+			self.strInEntity = "FLOOR"	#floor or GateOpen (TODO (real version): separate this out, just in case of "Summon Gate" skill or something that might stack Gates.
+		else:
+			self.strInEntity = "[ERROR] unknown strInEntity"
 			
+		print("self.strInEntity", self.strInEntity)
 		
 		self.strTileEntityTop = ""
 		
@@ -275,7 +293,7 @@ class Map:
 			self.strTileEntityTop = "TERRAIN"	#GateOpen
 		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), Floor):
 			self.strTileEntityTop = "FLOOR"	#floor
-		
+		print("self.strTileEntityTop", self.strTileEntityTop)
 		if self.strTileEntityTop == "FULL":	#can't place anything in full tile
 			return -1
 		elif self.strTileEntityTop == "CREATURE":	#can't place FULL or CREATURE... or TERRAIN
@@ -288,18 +306,38 @@ class Map:
 				return -1
 			#else do nothing; can't add more GateOpens (TERRAIN) or Floor to Floor for now 
 		elif self.strTileEntityTop == "ITEM":
-			if self.strInEntity == "FULL" or self.strInEntity == "CREATURE" or self.strInEntity == "TERRAIN" or self.strInEntity == "FLOOR":
-				return -1
-			elif self.strInEntity == "ITEM":
+			if self.strInEntity == "CREATURE" or self.strInEntity == "ITEM":
 				self.aLstEntities[intInX][intInY][intInZ].append(inEntity)
+				if self.strInEntity == "FULL" or self.strInEntity == "CREATURE":
+					self.aTcodMaps[intInZ].walkable[intInY][intInX] = False
+# 					self.aTcodMaps[intInZ].transparent[intInY][intInX] = False
+			elif self.strInEntity == "FULL" or self.strInEntity == "TERRAIN" or self.strInEntity == "FLOOR":
+				return -1
 # 				self.aLstEntities[intInX][intInY][intInZ].insert(len(self.aLstEntities) - 2, inEntity)
+		elif self.strTileEntityTop == "TERRAIN":
+			if self.strInEntity == "CREATURE" or self.strInEntity == "ITEM":
+				self.aLstEntities[intInX][intInY][intInZ].append(inEntity)
+				if self.strInEntity == "CREATURE":
+					self.aTcodMaps[intInZ].walkable[intInY][intInX] = False
+			else:	#self.strInEntity == "FULL" or self.strInEntity == "TERRAIN" or self.strInEntity == "FLOOR":
+				return -1
 		else:	#else do nothing; can't add more GateOpens (TERRAIN) or Floor to Floor for now 
-			return -1
+			if self.strInEntity != "FLOOR":
+				self.aLstEntities[intInX][intInY][intInZ].append(inEntity)
+				if self.strInEntity == "FULL" or self.strInEntity == "CREATURE":
+					self.aTcodMaps[intInZ].walkable[intInY][intInX] = False
+				if self.strInEntity == "FULL":
+					self.aTcodMaps[intInZ].transparent[intInY][intInX] = False
+			else:
+				return -1
+		
+		self.updateFoV()
 	#END addEntityAt(self, inEntity, intInX, intInY, intInZ=-1, intInDropRadius=1)
 	
 	
 	def getEntityAt(self, intInEntityIndex, intInX, intInY, intInZ=-1):
 		'''
+			getEntityAtTileIndex
 			Finds the Entity of the given index (e.g., HealthRestorative) in a tile and returns it.
 		'''
 		if (intInZ == -1):
@@ -307,7 +345,76 @@ class Map:
 		
 		return self.aLstEntities[intInX][intInY][intInZ][intInEntityIndex]
 	#END getEntityAt(self, intInEntityIndex, intInX, intInY, intInZ=-1)
+	
+	
+	def removeEntityAt(self, inEntity : Entity, intInX, intInY, intInZ=-1):
+		'''
+		Removes Entity of given type at given Map coordinates.
+			TODO: remove specific Entity, not first instance in list.
+			Ammo (3) != Ammo (5).
+		'''
+		if (intInZ == -1):
+			intInZ = self.getPlayerZ()
 		
+			print("is",self.strInEntity)
+		#IF Entity type at target index = inbound Entity type, THEN delete
+		if isinstance(self.aLstEntities[intInX][intInY][intInZ][self.getEntityIndexAt(inEntity, intInX, intInY)], type(inEntity)):
+			self.strInEntity = ""
+			
+			if isinstance(inEntity, GateClosed) or isinstance(inEntity, Portal) or isinstance(inEntity, Wall):
+				self.strInEntity = "FULL"	# "full" tile
+			elif isinstance(inEntity, Enemy) or isinstance(inEntity, Player):
+				self.strInEntity = "CREATURE"	#creature on top
+			elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
+				self.strInEntity = "ITEM"	#items
+			elif isinstance(inEntity, GateOpen):
+				self.strInEntity = "TERRAIN"	#GateOpen
+			elif isinstance(inEntity, Floor):
+				self.strInEntity = "FLOOR"	#floor
+			if self.strInEntity == "FULL" or self.strInEntity == "CREATURE":
+				self.aTcodMaps[intInZ].walkable[intInY][intInX] = True
+			if self.strInEntity == "FULL":
+				self.aTcodMaps[intInZ].transparent[intInY][intInX] = True
+				
+			del self.aLstEntities[intInX][intInY][intInZ][self.getEntityIndexAt(inEntity, intInX, intInY)]
+			#TODO: return it. Or just GET and REMOVE in 2 lines
+
+			self.updateFoV()
+	#END removeEntityAt(self, inEntity : Entity, intInX, intInY, intInZ=-1
+	
+	
+	def removeEntityAtIndex(self, intInEntityIndex, intInX, intInY, intInZ=-1):
+		'''
+		Removes Entity at given tile index at given Map coordinates.
+		'''
+		if (intInZ == -1):
+			intInZ = self.getPlayerZ()
+		
+		if (intInEntityIndex <= len(self.aLstEntities[intInX][intInY][intInZ]) - 1 and not isinstance(self.aLstEntities[intInX][intInY][intInZ][intInEntityIndex], Player)):
+			self.strInEntity = ""
+			
+			if isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), GateClosed) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Portal) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Wall):
+				self.strInEntity = "FULL"	# "full" tile
+			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Enemy) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Player):
+				self.strInEntity = "CREATURE"	#creature on top
+			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), HealthConsumable) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), ShieldConsumable) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Ammo):
+				self.strInEntity = "ITEM"	#items
+			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), GateOpen):
+				self.strInEntity = "TERRAIN"	#GateOpen
+			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Floor):
+				self.strInEntity = "FLOOR"	#floor
+			if self.strInEntity == "FULL" or self.strInEntity == "CREATURE":
+				self.aTcodMaps[intInZ].walkable[intInY][intInX] = True
+			if self.strInEntity == "FULL":
+				self.aTcodMaps[intInZ].transparent[intInY][intInX] = True
+			
+			del self.aLstEntities[intInX][intInY][intInZ][intInEntityIndex]
+			
+			self.updateFoV()
+			
+
+
+	#END removeEntityAtIndex(self, intInEntityIndex, intInX, intInY, intInZ=-1)
 	
 
 	def getTopEntity(self, x, y, z=-1):

@@ -1,6 +1,9 @@
 '''
 ---CHANGELOG---
 2019/04/15:		(JSS5783)
+				Added message log tests to mouse controls.
+
+2019/04/15:		(JSS5783)
 				Added entity add/remove tests to mouse controls.
 
 2019/04/10:		(JSS5783)
@@ -27,7 +30,7 @@ class InputListener:
 		print("[DEBUG] Created ", type(self) )
 		
 
-	def handle_keys(self, key, mouse, inMap):
+	def handle_keys(self, key, mouse, inMap, inLog):
 		'''
 		Handles player input.
 		Arrow keys for movement.
@@ -45,7 +48,24 @@ class InputListener:
 			
 		elif key.vk == tcod.KEY_RIGHT:	#move right
 			inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() )
-			
+		
+# 		if key.vk == tcod.KEY_SHIFT:
+# 			if key.vk == tcod.KEY_RIGHT and key.vk == tcod.KEY_UP:	#move right
+# 				inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() - 1)
+# 		else:
+# 			if key.vk == tcod.KEY_UP:		#move up
+# 				inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() - 1)
+# 				
+# 			elif key.vk == tcod.KEY_DOWN:	#move down
+# 				inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() + 1)
+# 				
+# 			elif key.vk == tcod.KEY_LEFT:	#move left
+# 				inMap.updatePlayerPosition(inMap.getPlayerX() - 1, inMap.getPlayerY() )
+# 				
+# 			elif key.vk == tcod.KEY_RIGHT:	#move right
+# 				inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() )
+# 		
+# 			
 		elif key.vk == tcod.KEY_SPACE:	#TODO real version: time travel without assuming only 2 timelines.
 			if DEBUG_MODE: print("[DEBUG] Time-traveling attempt from timeline", inMap.getPlayerZ() )
 			if (inMap.getPlayerZ() == 0):
@@ -64,11 +84,16 @@ class InputListener:
 		#TODO: only return information if in FoV (skip memory FoV for now)
 		if mouse.lbutton_pressed == True:	#left-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
-				inMap.printTileContents(mouse.cx, mouse.cy, 0)
-				inMap.addEntityAt(HealthConsumable(), mouse.cx, mouse.cy)
+# 				inMap.printTileContents(mouse.cx, mouse.cy, 0)
+				inMap.printTileContents(mouse.cx, mouse.cy)
+				inMap.addEntityAt(Wall(), mouse.cx, mouse.cy)
+				inLog.addMessage("The quick brown fox jumped over the lazy dog.")
 		if mouse.rbutton_pressed == True:	#right-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
-				inMap.printTileContents(HealthConsumable() , mouse.cx, mouse.cy)
-				inMap.getEntityIndexAt()
+# 				inMap.printTileContents(mouse.cx, mouse.cy, 1)
+				inMap.printTileContents(mouse.cx, mouse.cy)
+				inMap.getEntityIndexAt(Wall(), mouse.cx, mouse.cy)
+# 				inMap.removeEntityAt(HealthConsumable(), mouse.cx, mouse.cy)
+				inMap.removeEntityAtIndex(1, mouse.cx, mouse.cy)
 				
 	#END handle_keys(self, key, mouse, inMap)
