@@ -4,6 +4,11 @@
 				Added removeEntityAt.
 				addEntityAt, getEntityAt, getEntityIndexAt, and removeEntityAt all work now, with updating FoV.
 
+
+2019/04/16		(Bryan)
+				Randomly generate items on map at appropriate locations
+				Put in simple enemies with hp for item testing
+
 				
 2019/04/15:		(JSS5783)
 				Continued working on addEntityAt, getEntityAt, and getEntityIndexAt.
@@ -156,7 +161,8 @@ class Map:
 						
 					elif (self.strCurrentLine[x] == "!"):	#place random item
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.intResult = self.rng.randint(0,2)
+# 						self.intResult = self.rng.randint(0,2)
+						randItem = randint(0,2)
 						
 #             			randItem = randint(0,2)
 # 						if randItem == 0:
@@ -172,12 +178,28 @@ class Map:
 # 							ITEMS.append(item)
 # 							print(item.strName)
 							
-						if (self.intResult == 0):
-							self.aLstEntities[x][y][intInTimeline].append(HealthConsumable() )
-						elif (self.intResult == 1):
-							self.aLstEntities[x][y][intInTimeline].append(ShieldConsumable() )
-						elif (self.intResult == 2):
-							self.aLstEntities[x][y][intInTimeline].append(Ammo() )
+# 						if (self.intResult == 0):
+# 							self.aLstEntities[x][y][intInTimeline].append(HealthConsumable() )
+# 						elif (self.intResult == 1):
+# 							self.aLstEntities[x][y][intInTimeline].append(ShieldConsumable() )
+# 						elif (self.intResult == 2):
+# 							self.aLstEntities[x][y][intInTimeline].append(Ammo() )
+						
+						if randItem == 0:
+							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y, 2, 2, 5) )
+							item = FistoKit(x, y, 2, 2, 5)
+							ITEMS.append(item)
+							print(item.strName)
+						elif randItem == 1:
+							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, 5, 5) )
+							item = Shield(x, y, 5, 5)
+							ITEMS.append(item)
+							print(item.strName)
+						elif randItem == 2:
+							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 4, 2) )
+							item = Blaster(x, y, 4, 4, 2)
+							ITEMS.append(item)
+							print(item.strName)
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
@@ -270,7 +292,8 @@ class Map:
 			self.strInEntity = "FULL"	#"full"
 		elif isinstance(inEntity, Enemy) or isinstance(inEntity, Player):
 			self.strInEntity = "CREATURE"	#creature
-		elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
+# 		elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
+		elif isinstance(inEntity, Shield) or isinstance(inEntity, Blaster) or isinstance(inEntity, FistoKit):
 			self.strInEntity = "ITEM"	#items
 		elif isinstance(inEntity, GateOpen):
 			self.strInEntity = "TERRAIN"	#GateOpen
@@ -287,7 +310,8 @@ class Map:
 			self.strTileEntityTop = "FULL"	# "full" tile
 		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), Enemy) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Player):
 			self.strTileEntityTop = "CREATURE"	#creature on top
-		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), HealthConsumable) or isinstance(self.getTopEntity(intInX, intInY, intInZ), ShieldConsumable) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Ammo):
+# 		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), HealthConsumable) or isinstance(self.getTopEntity(intInX, intInY, intInZ), ShieldConsumable) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Ammo):
+		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), Shield) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Blaster) or isinstance(self.getTopEntity(intInX, intInY, intInZ), FistoKit):
 			self.strTileEntityTop = "ITEM"	#items
 		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), GateOpen):
 			self.strTileEntityTop = "TERRAIN"	#GateOpen
@@ -365,7 +389,8 @@ class Map:
 				self.strInEntity = "FULL"	# "full" tile
 			elif isinstance(inEntity, Enemy) or isinstance(inEntity, Player):
 				self.strInEntity = "CREATURE"	#creature on top
-			elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
+# 			elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
+			elif isinstance(inEntity, Shield) or isinstance(inEntity, Blaster) or isinstance(self.getTopEntity(intInX, intInY, intInZ), FistoKit):
 				self.strInEntity = "ITEM"	#items
 			elif isinstance(inEntity, GateOpen):
 				self.strInEntity = "TERRAIN"	#GateOpen
@@ -397,7 +422,8 @@ class Map:
 				self.strInEntity = "FULL"	# "full" tile
 			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Enemy) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Player):
 				self.strInEntity = "CREATURE"	#creature on top
-			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), HealthConsumable) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), ShieldConsumable) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Ammo):
+# 			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), HealthConsumable) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), ShieldConsumable) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Ammo):
+			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Shield) or isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), Blaster) or isinstance(self.getTopEntity(intInX, intInY, intInZ), FistoKit):
 				self.strInEntity = "ITEM"	#items
 			elif isinstance(self.getEntityAt(intInEntityIndex, intInX, intInY, intInZ), GateOpen):
 				self.strInEntity = "TERRAIN"	#GateOpen
@@ -710,5 +736,3 @@ class Map:
 		print(x, y, z, "top =", self.getTopEntity(x, y).getName(), "| walkable =", self.aTcodMaps[z].walkable[y][x], "| FoV =", self.aTcodMaps[z].fov[y][x], "| explored =", self.aBoolIsExplored[x][y][z], "| memory =", self.aSymbolMemory[x][y][z] )
 		for i in range(len(self.aLstEntities[x][y][z] ) ):
 			print("\t", self.aLstEntities[x][y][z][i].getName() )
-
-

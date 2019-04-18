@@ -1,7 +1,10 @@
 '''
 ---CHANGELOG---
-2019/04/15:		(JSS5783)
+2019/04/17:		(JSS5783)
 				Added message log tests to mouse controls.
+
+2019/04/16		(Bryan)
+				Added get "g" input handler
 
 2019/04/15:		(JSS5783)
 				Added entity add/remove tests to mouse controls.
@@ -23,6 +26,8 @@ import tcod
 from src.constants import *
 from src.Map import *
 from tcod import event
+from src.item_functions import *
+from src.Entity import *
 
 
 class InputListener:
@@ -65,7 +70,28 @@ class InputListener:
 # 			elif key.vk == tcod.KEY_RIGHT:	#move right
 # 				inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() )
 # 		
-# 			
+	
+		if key.text == "g": 
+			for item in ITEMS:
+				if item.x == inMap.getPlayerX() and item.y == inMap.getPlayerY():
+						
+					myPlayer = inMap.getTopEntity(item.x, item.y)
+												
+					if item.strName == "Fisto Kit":
+						getFistoKit(item, myPlayer)
+					elif item.strName == "Shield":
+						getSheild(item, myPlayer)
+					elif item.strName == "Blaster":
+						getBlaster(item)
+								
+					print(myPlayer.hp, myPlayer.damage)
+					print(INVENTORY)
+					break
+				
+				else:
+					print("nothing here")
+# 					print(inMap.getPlayerX, item.x)
+# 					print(inMap.getPlayerY, item.y)
 		elif key.vk == tcod.KEY_SPACE:	#TODO real version: time travel without assuming only 2 timelines.
 			if DEBUG_MODE: print("[DEBUG] Time-traveling attempt from timeline", inMap.getPlayerZ() )
 			if (inMap.getPlayerZ() == 0):
@@ -95,5 +121,15 @@ class InputListener:
 				inMap.getEntityIndexAt(Wall(), mouse.cx, mouse.cy)
 # 				inMap.removeEntityAt(HealthConsumable(), mouse.cx, mouse.cy)
 				inMap.removeEntityAtIndex(1, mouse.cx, mouse.cy)
+			print("right clicked")
+			for item in INVENTORY:
+				print(item.strName)
+				if item.strName == "Blaster":
+					print("Blaster")
+					for enemy in ENEMIES:
+						if enemy.x == mouse.cx and enemy.y == mouse.cy:
+							useBlaster(enemy, item)
+							print(enemy.hp)
+							print(item.ammo)
 				
 	#END handle_keys(self, key, mouse, inMap)

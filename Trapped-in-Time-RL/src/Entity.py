@@ -1,5 +1,9 @@
 '''
 ---CHANGELOG---
+2019/04/16		(Bryan)
+				Updated Item classes (Blaster, Shield, and Fisto Kit) as needed
+				Updated Player and Enemy classes enough for item testing (may need further updating)
+				
 2019/04/05		(JSS5783)
 				Finished reworking code. Creating a new Entity type in code is simpler now.
 
@@ -119,22 +123,57 @@ class Player(Entity):
 #END Player(Entity)
 
 
-class ShieldConsumable(Entity):
-	def __init__(self):
-		super().__init__('¿', "shield repair kit", BLUE_LIGHT, BLACK, False, True)
-#END ShieldConsumable(Entity)
+# class ShieldConsumable(Entity):
+# 	def __init__(self):
+# 		super().__init__('¿', "shield repair kit", BLUE_LIGHT, BLACK, False, True)
+# #END ShieldConsumable(Entity)
 
 
-class HealthConsumable(Entity):
-	def __init__(self):
-		super().__init__('¡', "medical kit", BLUE_LIGHT, BLACK, False, True)
-#END HealthConsumable(Entity)
+# class HealthConsumable(Entity):
+# 	def __init__(self):
+# 		super().__init__('¡', "medical kit", BLUE_LIGHT, BLACK, False, True)
+# #END HealthConsumable(Entity)
 
 
-class Ammo(Entity):
-	def __init__(self):
-		super().__init__(',', "pistol bullet", BLUE_LIGHT, BLACK, False, True)
-#END Ammo(Entity)
+# class Ammo(Entity):
+# 	def __init__(self):
+# 		super().__init__(',', "pistol bullet", BLUE_LIGHT, BLACK, False, True)
+# #END Ammo(Entity)
+
+
+class Shield(Entity):
+	def __init__(self, x, y, charges, maxCharges):
+		super().__init__('¿', "Shield", BLUE_LIGHT, BLACK, False, True)
+		self.x = x
+		self.y = y
+		self.charges = charges
+		self.maxCharges = maxCharges
+
+
+class FistoKit(Entity):
+	def __init__(self, x, y, charges, maxCharges, damage):
+		'''
+		Melee weapon.
+		'''
+		super().__init__('¡', "Fisto Kit", BLUE_LIGHT, BLACK, False, True)
+		self.x = x
+		self.y = y
+		self.charges = charges
+		self.maxCharges = maxCharges
+		self.damage = damage
+
+
+class Blaster(Entity):
+	def __init__(self, x, y, ammo, maxAmmo, damage):
+		'''
+		Ranged weapon.
+		'''
+		super().__init__(',', "Blaster", BLUE_LIGHT, BLACK, False, True)
+		self.x = x
+		self.y = y
+		self.ammo = ammo
+		self.maxAmmo = maxAmmo
+		self.damage = damage
 
 
 class Portal(Entity):
