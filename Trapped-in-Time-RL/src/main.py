@@ -1,5 +1,10 @@
 '''
 ---CHANGELOG---
+2019/04/19		(Bryan)
+				Added Turn Order
+				Added Enemy and Player Death Functions
+				Finished item usability
+				
 2019/04/09:		(JSS5783)
 				Updated code with new Map variables and methods after several (broken, unfinished) dead-ends.
 				Moved code into main().
@@ -35,6 +40,9 @@ from src.MessageLog import *
 from src.InputListener import *
 from tcod.libtcodpy import console_set_char_foreground
 from tcod import event
+from src.GameStates import *
+from src.DeathFunctions import *
+
 
 
 def main():
@@ -53,6 +61,9 @@ def main():
 	# event = tcod.event()
 	log = MessageLog()
 	handler = InputListener()
+	gameState = GameStates.PLAYERS_TURN
+	
+	turnCount = 0
 	
 	#main loop
 	while not tcod.console_is_window_closed():
@@ -75,20 +86,40 @@ def main():
 		tcod.console_flush()
 	# 	tcod.console_blit(console, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 		
-		strCode = handler.handle_keys(key, mouse, map1)
-		
-		tcod.console_rect(console, 0, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True)
-		
-	# 	bTest = handle_event(mouse)
-		if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
-	# 		tcod.console_set_default_background(console, ORANGE_LIGHT)
-	# 		tcod.console_set_default_foreground(console, BLUE_LIGHT)
+		if gameState == GameStates.PLAYERS_TURN:
+			print(gameState)
+			strCode = handler.handle_keys(key, mouse, map1, gameState)
+			
 			tcod.console_rect(console, 0, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True)
-			tcod.console.Console.print_(console, 0, MAP_HEIGHT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
-	# 		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
-	# 		tcod.console_flush()
-		if (strCode == "code:EXIT"):
-			break
+			
+		# 	bTest = handle_event(mouse)
+			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
+		# 		tcod.console_set_default_background(console, ORANGE_LIGHT)
+		# 		tcod.console_set_default_foreground(console, BLUE_LIGHT)
+				tcod.console_rect(console, 0, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True)
+				tcod.console.Console.print_(console, 0, MAP_HEIGHT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
+		# 		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
+		# 		tcod.console_flush()
+			if (strCode == "code:EXIT"):
+				break
+			if (strCode == "endTurn"):
+				gameState = GameStates.ENEMY_TURN
+				turnCount += 1
+				print(turnCount)
+				
+			#if strCode:
+			
+				
+		if gameState == GameStates.ENEMY_TURN:
+			print(gameState)
+			for x in range(MAP_WIDTH):
+				for y in range(MAP_HEIGHT):
+					if map1.getTopEntity(x, y).strName == "enemy":
+						enemy = map1.getTopEntity(x, y)
+						if enemy.hp <= 0:
+							deadEnemy(enemy, map1)
+			gameState = GameStates.PLAYERS_TURN
+			
 #END main()
 
 	

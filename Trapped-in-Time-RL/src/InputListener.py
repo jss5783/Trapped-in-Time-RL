@@ -1,12 +1,16 @@
 '''
 ---CHANGELOG---
 
+2019/04/19		(Bryan)
+				updated input handlers to return "endTurn" for turn order tracking
+				Modified "g" function to work with Item get functions
+
 2019/04/16		(Bryan)
 				Added get "g" input handler
 
 2019/04/15:		(JSS5783)
 				Added entity add/remove tests to mouse controls.
-
+				
 
 2019/04/10:		(JSS5783)
 				Moved tile-reporting code into Map.printTileContents().
@@ -25,6 +29,7 @@ import tcod
 from src.constants import *
 from src.Map import *
 from tcod import event
+from Project.game_states import GameStates
 
 
 class InputListener:
@@ -32,7 +37,7 @@ class InputListener:
 		print("[DEBUG] Created ", type(self) )
 		
 
-	def handle_keys(self, key, mouse, inMap):
+	def handle_keys(self, key, mouse, inMap, gameState):
 		'''
 		Handles player input.
 		Arrow keys for movement.
@@ -41,37 +46,37 @@ class InputListener:
 	
 		if key.vk == tcod.KEY_UP:		#move up
 			inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() - 1)
-			
+			return "endTurn"
 		elif key.vk == tcod.KEY_DOWN:	#move down
 			inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() + 1)
-			
+			return "endTurn"
 		elif key.vk == tcod.KEY_LEFT:	#move left
 			inMap.updatePlayerPosition(inMap.getPlayerX() - 1, inMap.getPlayerY() )
-			
+			return "endTurn"
 		elif key.vk == tcod.KEY_RIGHT:	#move right
 			inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() )
-		
+			return "endTurn"
 		if key.text == "g": 
-			for item in ITEMS:
-				if item.x == inMap.getPlayerX() and item.y == inMap.getPlayerY():
-										
-					myPlayer = inMap.getTopEntity(item.x, item.y)
+			item = inMap.getUnderPlayer()				
+			print(item)
+			print(inMap.aLstEntities)							
+			myPlayer = inMap.getTopEntity(item.x, item.y)
 											
-					if item.strName == "Fisto Kit":
-						getFistoKit(item, myPlayer)
-					elif item.strName == "Shield":
-						getSheild(item, myPlayer)
-					elif item.strName == "Blaster":
-						getBlaster(item)
+			if item.strName == "Fisto Kit":
+				getFistoKit(item, myPlayer, inMap)
+			elif item.strName == "Shield":
+				getSheild(item, myPlayer, inMap)
+			elif item.strName == "Blaster":
+				getBlaster(item, inMap)
 								
-					print(myPlayer.hp, myPlayer.damage)
-					print(INVENTORY)
-					break
+			
+			
 				
 			else:
 				print("nothing here")
-# 				print(inMap.getPlayerX, item.x)
-# 				print(inMap.getPlayerY, item.y)
+			print(myPlayer.hp, myPlayer.damage)
+			print(INVENTORY)
+			return "endTurn"
 			
 		elif key.vk == tcod.KEY_SPACE:	#TODO real version: time travel without assuming only 2 timelines.
 			if DEBUG_MODE: print("[DEBUG] Time-traveling attempt from timeline", inMap.getPlayerZ() )
@@ -79,7 +84,7 @@ class InputListener:
 				inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() + 1)
 			else:
 				inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() - 1)
-			
+			return "endTurn"
 		elif key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
 			tcod.console_set_fullscreen(not tcod.console_is_fullscreen() )
 			
@@ -98,16 +103,18 @@ class InputListener:
 
 				inMap.printTileContents(mouse.cx, mouse.cy, 1)
 		#if mouse.rbutton_pressed == True:
-			print("right clicked")
-			for item in INVENTORY:
-				print(item.strName)
-				if item.strName == "Blaster":
-					print("Blaster")
-					for enemy in ENEMIES:
-						if enemy.x == mouse.cx and enemy.y == mouse.cy:
-							useBlaster(enemy, item)
-							print(enemy.hp)
-							print(item.ammo)
+			if inMap.getTopEntity(mouse.cx, mouse.cy).strName == "enemy":
+				enemy = inMap.getTopEntity(mouse.cx, mouse.cy)
+				for item in INVENTORY:
+					print(item.strName)
+					if item.strName == "Blaster":
+						print("Blaster")
+						useBlaster(enemy, item)
+						print(enemy.hp)
+						print(item.ammo)
+				return "endTurn"
+			else:
+				print(inMap.getTopEntity(mouse.cx, mouse.cy))
 		
 
 	#END handle_keys(self, key, mouse, inMap)

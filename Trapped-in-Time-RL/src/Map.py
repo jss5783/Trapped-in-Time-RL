@@ -146,12 +146,12 @@ class Map:
 						#TODO: set Player x, y so map refreshes properly (at -1, -1 right now)
 					elif (self.strCurrentLine[x] == "E"):
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(Enemy() )
+						self.aLstEntities[x][y][intInTimeline].append(Enemy(x, y, 4) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
-						enemy = Baddie(x, y, 4)
-						ENEMIES.append(enemy)
+# 						enemy = Baddie(x, y, 4)
+# 						ENEMIES.append(enemy)
 						
 					elif (self.strCurrentLine[x] == "!"):	#place random item
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
@@ -159,19 +159,13 @@ class Map:
 							
 						if randItem == 0:
 							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y, 2, 2, 5) )
-							item = FistoKit(x, y, 2, 2, 5)
-							ITEMS.append(item)
-							print(item.strName)
+							
 						elif randItem == 1:
 							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, 5, 5) )
-							item = Shield(x, y, 5, 5)
-							ITEMS.append(item)
-							print(item.strName)
+							
 						elif randItem == 2:
 							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 4, 2) )
-							item = Blaster(x, y, 4, 4, 2)
-							ITEMS.append(item)
-							print(item.strName)
+							
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
@@ -257,7 +251,7 @@ class Map:
 			self.strInEntity = "FULL"	#"full"
 		elif isinstance(inEntity, Enemy) or isinstance(inEntity, Player):
 			self.strInEntity = "CREATURE"	#creature
-		elif isinstance(inEntity, HealthConsumable) or isinstance(inEntity, ShieldConsumable) or isinstance(inEntity, Ammo):
+		elif isinstance(inEntity, FistoKit) or isinstance(inEntity, Shield) or isinstance(inEntity, Blaster):
 			self.strInEntity = "ITEM"	#items
 		elif isinstance(inEntity, Floor) or isinstance(inEntity, GateOpen):
 			self.strInEntity = "TERRAIN"	#floor or GateOpen (TODO (real version): separate this out, just in case of "Summon Gate" skill or something that might stack Gates.
@@ -269,7 +263,7 @@ class Map:
 			self.strTileEntityTop = "FULL"	# "full" tile
 		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), Enemy) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Player):
 			self.strTileEntityTop = "CREATURE"	#creature on top
-		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), HealthConsumable) or isinstance(self.getTopEntity(intInX, intInY, intInZ), ShieldConsumable) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Ammo):
+		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), FistoKit) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Shield) or isinstance(self.getTopEntity(intInX, intInY, intInZ), Blaster):
 			self.strTileEntityTop = "ITEM"	#items
 		elif isinstance(self.getTopEntity(intInX, intInY, intInZ), GateOpen):
 			self.strTileEntityTop = "TERRAIN"	#GateOpen
@@ -323,6 +317,17 @@ class Map:
 # 			return self.getTopEntity(x, y, z)
 			return self.aLstEntities[x][y][z][self.getTopIndex(x, y, z) ]
 	#END getTopEntity(self, x, y, z=-1)
+	
+	def getUnderPlayer(self):
+		'''
+		Returns top Entity that the Player is standing on.
+			(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
+		(Otherwise, return floor tile.)
+		'''
+		return self.aLstEntities[self.getPlayerX()][self.getPlayerY()][self.getPlayerZ()][self.getTopIndex(self.getPlayerX(), self.getPlayerY(), self.getPlayerZ() ) - 1 ]
+# 			
+		
+	
 # # 
 # 	def getTopEntity(self, x, y, z=-1):
 # 		if len(self.alstObject[x][y]) > 0:
@@ -438,6 +443,7 @@ class Map:
 
 	#TODO: finish implementation of addEntityAt, getEntityAt, and getEntityIndexAt.
 	def updatePlayerPosition(self, x, y, z=-1):
+		results = []
 		'''
 		Tries to move Player to given coordinates.
 		Used for time-traveling.
@@ -518,6 +524,8 @@ class Map:
 				self.updateFoV()
 			else:
 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
+				if self.getTopEntity(x, y, z).strName == "enemy":
+					meleeAttack(self.getTopEntity(self.intPlayerX, self.intPlayerY, self.intPlayerZ), self.getTopEntity(x, y, z))
 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
 	#END updatePlayerPosition(self, x, y, z=-1):	
 		
