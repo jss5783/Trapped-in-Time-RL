@@ -50,7 +50,7 @@ ITEMS = []		#Bryan: Added ITEMS list to store all items in game
 INVENTORY = []	#Bryan: Added INVENTORY list to handle items currently held by player
 ENEMIES = []  	#Bryan: Added ENEMIES list to store all enemies in game
 DEBUG_MODE = True
-if (DEBUG_MODE):	#TODO: use system datetime for non-debug value
+if DEBUG_MODE:	#TODO: use system datetime for non-debug value
 	SEED = 5
 else:
 	SEED = datetime.datetime.now()

@@ -1,5 +1,9 @@
 '''
 ---CHANGELOG---
+2019/04/18:		(JSS5783)
+				Continued updates/bugfixes to various Map-querying functions.
+				Debug: updateFoV no longer just refreshes within a limited radius.
+
 2019/04/17:		(JSS5783)
 				Added removeEntityAt.
 				addEntityAt, getEntityAt, getEntityIndexAt, and removeEntityAt all work now, with updating FoV.
@@ -186,20 +190,18 @@ class Map:
 # 							self.aLstEntities[x][y][intInTimeline].append(Ammo() )
 						
 						if randItem == 0:
-							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y, 2, 2, 5) )
-							item = FistoKit(x, y, 2, 2, 5)
-							ITEMS.append(item)
-							print(item.strName)
+# 							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y) )
+# 							item = FistoKit(x, y)
+							self.aLstEntities[x][y][intInTimeline].append(FistoKit() )
+							item = FistoKit()
 						elif randItem == 1:
 							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, 5, 5) )
 							item = Shield(x, y, 5, 5)
-							ITEMS.append(item)
-							print(item.strName)
 						elif randItem == 2:
 							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 4, 2) )
 							item = Blaster(x, y, 4, 4, 2)
-							ITEMS.append(item)
-							print(item.strName)
+						ITEMS.append(item)
+						print(item.strName)
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
@@ -262,13 +264,14 @@ class Map:
 		if (intInZ == -1):
 			intInZ = self.getPlayerZ()
 		
-		self.intEntityIndex = 0
+		self.intEntityIndex = -1
 		
 		for i in range(len(self.aLstEntities[intInX][intInY][intInZ]) ):
-			if isinstance(self.aLstEntities[intInX][intInY][intInZ][i], type(inEntityType) ):
+			print(inEntityType)
+			if isinstance(self.aLstEntities[intInX][intInY][intInZ][i], inEntityType):
 				self.intEntityIndex = i
 # 		print(self.intEntityIndex)
-		
+		print(self.intEntityIndex)
 		return self.intEntityIndex
 	#END getEntityIndexAt(self, inEntityType, intInX, intInY, intInZ=-1)
 	
@@ -280,7 +283,6 @@ class Map:
 			TODO (real version): Drop items in random available space (in first free space when first implementing). Probably use a boolean canPlaceItem[x][y], pick until True (placeable) is found, and then use those random x and y values in aLstEntities[randX][randY][intPlayerZ].
 				Do multiple times/in a pattern for AoEs.
 			Return -1 if cannot add Entity.
-			TODO: add/remove blocking. Removed enemy = walkable.
 		'''
 		if (intInZ == -1):
 			intInZ = self.getPlayerZ()
@@ -298,7 +300,7 @@ class Map:
 		elif isinstance(inEntity, GateOpen):
 			self.strInEntity = "TERRAIN"	#GateOpen
 		elif isinstance(inEntity, Floor):
-			self.strInEntity = "FLOOR"	#floor or GateOpen (TODO (real version): separate this out, just in case of "Summon Gate" skill or something that might stack Gates.
+			self.strInEntity = "FLOOR"	#floor; separated this out, just in case of "Summon Gate" skill or something that might stack Gates.
 		else:
 			self.strInEntity = "[ERROR] unknown strInEntity"
 			
@@ -691,7 +693,12 @@ class Map:
 					self.aTcodMaps[0].fov[y][x] = False
 					
 		#updates Player-containing timeline
-		self.aTcodMaps[self.intPlayerZ].compute_fov(self.intPlayerX, self.intPlayerY, FOV_RADIUS, True, tcod.FOV_SHADOW)
+		if (DEBUG_MODE):
+			for y in range(MAP_HEIGHT):
+				for x in range(MAP_WIDTH):
+					self.aTcodMaps[self.intPlayerZ].fov[y][x] = True
+		else:
+			self.aTcodMaps[self.intPlayerZ].compute_fov(self.intPlayerX, self.intPlayerY, FOV_RADIUS, True, tcod.FOV_SHADOW)
 	#END updateFoV(self, z=-1)
 	
 

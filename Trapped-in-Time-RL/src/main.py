@@ -1,5 +1,9 @@
 '''
 ---CHANGELOG---
+2019/04/19:		(JSS5783)
+				Status added.
+				Story added.
+
 2019/04/09:		(JSS5783)
 				[BUGFIX] Font now displays properly in black background/white foreground.
 				[BUGFIX] Longer messages are properly overwritten in console now.
@@ -37,6 +41,7 @@ from src.constants import *
 from src.Entity import *
 from src.MessageLog import *
 from src.InputListener import *
+from src.Status import *
 from tcod.libtcodpy import console_set_char_foreground
 from tcod import event
 
@@ -46,7 +51,7 @@ def main():
 	#declaration and initialization
 	map1 = Map(MAP_WIDTH, MAP_HEIGHT, 2)
 	tcod.console_set_custom_font(FONT, tcod.FONT_LAYOUT_CP437)	#set console font
-	console = tcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, title="Trapped in Time RL", fullscreen=False)	#create main console
+	console = tcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, title="Trapped in Time RL (pre-alpha)", fullscreen=False)	#create main console
 	tcod.sys_set_fps(FPS_CAP)	#set FPS cap; only if real-time, but keeping as acttion-rate limiter
 	
 	#stores key inputs
@@ -54,12 +59,18 @@ def main():
 	mouse = tcod.Mouse()
 	# event = tcod.event()
 	log = MessageLog()
+	status = Status()
 	handler = InputListener()
+
+	log.addMessage("You awake in an abandoned factory, head pounding.")
+	log.addMessage("Who... are you? You look yourself over.")
+	log.addMessage("There is a strange watch-like device on one arm.")
+	log.addMessage("SYSTEM: [g]rab item / [t]ime-travel / [←↑↓→] move")
 	
 	#main loop
 	while not tcod.console_is_window_closed():
 		tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
-		strCode = handler.handle_keys(key, mouse, map1, log) 
+		strCode = handler.handle_keys(key, mouse, map1, log, status)
 		
 		console.clear()
 		
@@ -68,7 +79,8 @@ def main():
 	# 		tcod.console_set_default_background(console, ORANGE_LIGHT)
 	# 		tcod.console_set_default_foreground(console, BLUE_LIGHT)
 # 			tcod.console_rect(console, 0, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True)
-			tcod.console.Console.print_(console, 0, MAP_HEIGHT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
+# 			tcod.console.Console.print_(console, 0, MAP_HEIGHT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
+			status.setTooltip("(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
 	# 		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
 	# 		tcod.console_flush()
 		
@@ -89,6 +101,7 @@ def main():
 	# 	tcod.console.Console.rect(console, 0, MAP_HEIGHT, STATUS_WIDTH, STATUS_HEIGHT, True, 0)
 	# 	tcod.console.Console.rect(console, MAP_WIDTH - MESSAGE_WIDTH, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True, 0)
 		log.printLog(console)
+		status.printStatus(console)
 		tcod.console_flush()
 	# 	tcod.console_blit(console, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 		
