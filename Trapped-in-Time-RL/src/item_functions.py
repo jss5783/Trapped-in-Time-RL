@@ -15,6 +15,7 @@ Created on Apr 8, 2019
 '''
 
 from src.constants import INVENTORY, ITEMS
+from GameStates import *
 def useBlaster(enemy, item):
     
     
@@ -73,3 +74,4 @@ def getSheild(item, myPlayer, inMap):
         INVENTORY.append(item)
     
     inMap.aLstEntities[inMap.getPlayerX()][inMap.getPlayerY()][inMap.getPlayerZ()].remove(item)        
+    

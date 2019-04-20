@@ -174,7 +174,7 @@ class Map:
 							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, 5, 5) )
 							
 						elif randItem == 2:
-							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 4, 2) )
+							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 2) )
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
@@ -182,7 +182,7 @@ class Map:
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
 						self.aLstEntities[x][y][intInTimeline].append(Portal() )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
-						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
+						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
 						
 					elif (self.strCurrentLine[x] == "▬"):
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
@@ -633,6 +633,9 @@ class Map:
 	# 			self.alstObject[self.intPlayerX][self.intPlayerY].append(Player() )
 	# 			self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].append
 				self.updateFoV()
+# 				if self.getUnderPlayer().strName == "portal":
+# 					print("LEVEL UP")
+# 					levelUp()
 			else:
 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
