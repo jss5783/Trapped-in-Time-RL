@@ -36,7 +36,7 @@ class InputListener:
 		print("[DEBUG] Created ", type(self) )
 		
 
-	def handle_keys(self, key, mouse, inMap):
+	def handle_keys(self, key, mouse, inMap, log, status):
 		'''
 		Handles player input.
 		Arrow keys for movement.
@@ -96,7 +96,6 @@ class InputListener:
 		if mouse.lbutton_pressed == True:	#left-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
 				inMap.printTileContents(mouse.cx, mouse.cy, 0)
-				inMap.addEntityAt(HealthConsumable(), mouse.cx, mouse.cy)
 		if mouse.rbutton_pressed == True:	#right-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
 

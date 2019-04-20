@@ -160,7 +160,7 @@ class Shield(Entity):
 
 class FistoKit(Entity):
 # 	def __init__(self, x, y, charges=2, maxCharges=2, damage=5):
-	def __init__(self, charges=2, maxCharges=2, damage=5):
+	def __init__(self, x, y, charges=2, maxCharges=2, damage=5):
 		'''
 		Melee weapon.
 		'''
