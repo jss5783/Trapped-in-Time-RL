@@ -115,8 +115,11 @@ class Floor(Entity):
 
 
 class Enemy(Entity):
-	def __init__(self):
+	def __init__(self, x, y, hp):
 		super().__init__('E', "enemy", ORANGE_LIGHT, BLACK, True, True)
+		self.x = x
+		self.y = y 
+		self.hp = hp
 #END Enemy(Entity)
 
 
