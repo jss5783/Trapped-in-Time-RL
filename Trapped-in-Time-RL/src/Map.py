@@ -431,11 +431,11 @@ class Map:
 # 			return self.getTopEntity(x, y, z)
 			return self.aLstEntities[x][y][z][self.getTopIndex(x, y, z) ]
 	#END getTopEntity(self, x, y, z=-1)
-  
-  def getUnderPlayer(self):
+
+	def getUnderPlayer(self):
 		'''
 		Returns top Entity that the Player is standing on.
-			(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
+		(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
 		(Otherwise, return floor tile.)
 		'''
 		return self.aLstEntities[self.getPlayerX()][self.getPlayerY()][self.getPlayerZ()][self.getTopIndex(self.getPlayerX(), self.getPlayerY(), self.getPlayerZ() ) - 1 ]
