@@ -1,5 +1,8 @@
 '''
 ---CHANGELOG---
+2019/04/20		(Bryan)
+				Changed Blaster ammo to a class variable instead of instance variable for level up purposes
+				
 2019/04/18		(JSS5783)
 				modified FistoKit to not use coordinates.
 
@@ -173,14 +176,15 @@ class FistoKit(Entity):
 
 
 class Blaster(Entity):
-	def __init__(self, x, y, ammo, maxAmmo, damage):
+	ammo = 4
+	
+	def __init__(self, x, y, maxAmmo, damage):
 		'''
 		Ranged weapon.
 		'''
 		super().__init__(',', "Blaster", BLUE_LIGHT, BLACK, False, True)
 		self.x = x
 		self.y = y
-		self.ammo = ammo
 		self.maxAmmo = maxAmmo
 		self.damage = damage
 

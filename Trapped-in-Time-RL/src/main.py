@@ -1,6 +1,9 @@
 
 '''
 ---CHANGELOG---
+2019/04/20		(Bryan)
+				Added level up condition
+				
 2019/04/19		(Bryan)
 				Added Turn Order
 				Added Enemy and Player Death Functions
@@ -125,7 +128,10 @@ def main():
 				gameState = GameStates.ENEMY_TURN
 				turnCount += 1
 				print(turnCount)
-        
+			if map1.getUnderPlayer().strName == "portal":
+				print("level up")
+				gameState = GameStates.LEVEL_UP
+
 		if gameState == GameStates.ENEMY_TURN:
 			print(gameState)
 			for x in range(MAP_WIDTH):
@@ -134,7 +140,14 @@ def main():
 						enemy = map1.getTopEntity(x, y)
 						if enemy.hp <= 0:
 							deadEnemy(enemy, map1)
-			gameState = GameStates.PLAYERS_TURN    
+			gameState = GameStates.PLAYERS_TURN   
+			
+		if gameState == GameStates.LEVEL_UP:
+			log.addMessage("CONGRATULATIONS! You have leveled up.  Blasters now have unlimited ammo.  Have fun storming the castle!")
+			Blaster.ammo = float('inf')
+			map1.aLstEntities[map1.getPlayerX()][map1.getPlayerY()][map1.getPlayerZ()].remove(map1.getUnderPlayer())
+			gameState = GameStates.ENEMY_TURN
+
 #END main()
 
 	
