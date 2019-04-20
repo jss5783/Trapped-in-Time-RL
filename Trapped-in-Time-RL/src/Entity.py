@@ -1,5 +1,9 @@
 '''
 ---CHANGELOG---
+2019/04/18		(JSS5783)
+				modified FistoKit to not use coordinates.
+
+
 2019/04/16		(Bryan)
 				Updated Item classes (Blaster, Shield, and Fisto Kit) as needed
 				Updated Player and Enemy classes enough for item testing (may need further updating)
@@ -20,6 +24,7 @@ from src.constants import *
 
 
 class Entity:
+	#TODO: Might add coordinates back to Entity later, along with getters/setters.
 	def __init__(self, cInSymbol='?', strInName="UNDEFINED (please report to developers)", clrInForeground=MAGENTA_DARK, clrInBackground=GREEN_DARK, bInIsSolid=True, bInIsTranslucent=False):
 		'''
 			Entity constructor.
@@ -126,6 +131,22 @@ class Player(Entity):
 #END Player(Entity)
 
 
+# class ShieldConsumable(Entity):
+# 	def __init__(self):
+# 		super().__init__('¿', "shield repair kit", BLUE_LIGHT, BLACK, False, True)
+# #END ShieldConsumable(Entity)
+
+
+# class HealthConsumable(Entity):
+# 	def __init__(self):
+# 		super().__init__('¡', "medical kit", BLUE_LIGHT, BLACK, False, True)
+# #END HealthConsumable(Entity)
+
+
+# class Ammo(Entity):
+# 	def __init__(self):
+# 		super().__init__(',', "pistol bullet", BLUE_LIGHT, BLACK, False, True)
+# #END Ammo(Entity)
 
 
 class Shield(Entity):
@@ -135,31 +156,33 @@ class Shield(Entity):
 		self.y = y
 		self.charges = charges
 		self.maxCharges = maxCharges
-		
 
 
 class FistoKit(Entity):
-	def __init__(self, x, y, charges, maxCharges, damage):
+# 	def __init__(self, x, y, charges=2, maxCharges=2, damage=5):
+	def __init__(self, charges=2, maxCharges=2, damage=5):
+		'''
+		Melee weapon.
+		'''
 		super().__init__('¡', "Fisto Kit", BLUE_LIGHT, BLACK, False, True)
-		self.x = x
-		self.y = y
+# 		self.x = x
+# 		self.y = y
 		self.charges = charges
 		self.maxCharges = maxCharges
 		self.damage = damage
-		
-#END HealthConsumable(Entity)
 
 
 class Blaster(Entity):
 	def __init__(self, x, y, ammo, maxAmmo, damage):
+		'''
+		Ranged weapon.
+		'''
 		super().__init__(',', "Blaster", BLUE_LIGHT, BLACK, False, True)
 		self.x = x
 		self.y = y
 		self.ammo = ammo
 		self.maxAmmo = maxAmmo
 		self.damage = damage
-		
-#END Ammo(Entity)
 
 
 class Portal(Entity):
@@ -167,7 +190,7 @@ class Portal(Entity):
 	Level's end.
 	'''
 	def __init__(self):
-		super().__init__('☼', "portal", BLUE_LIGHT, BLACK, True, True)
+		super().__init__('☼', "portal", GREEN_LIGHT, BLACK, True, True)
 #END Portal(Entity)
 
 

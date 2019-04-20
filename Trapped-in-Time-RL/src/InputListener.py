@@ -29,7 +29,6 @@ import tcod
 from src.constants import *
 from src.Map import *
 from tcod import event
-from Project.game_states import GameStates
 
 
 class InputListener:
@@ -37,7 +36,7 @@ class InputListener:
 		print("[DEBUG] Created ", type(self) )
 		
 
-	def handle_keys(self, key, mouse, inMap, gameState):
+	def handle_keys(self, key, mouse, inMap):
 		'''
 		Handles player input.
 		Arrow keys for movement.
@@ -117,4 +116,3 @@ class InputListener:
 				print(inMap.getTopEntity(mouse.cx, mouse.cy))
 		
 
-	#END handle_keys(self, key, mouse, inMap)

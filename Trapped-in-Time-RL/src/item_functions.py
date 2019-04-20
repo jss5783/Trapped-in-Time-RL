@@ -1,4 +1,8 @@
 '''
+
+2019/04/18		(JSS5783)
+				Modified getShield to work with new Map methods. (Also some story.)
+
 Created on Apr 8, 2019
 
 @author: bryan
@@ -9,6 +13,7 @@ Created on Apr 8, 2019
                 Added pick up item function
                 Items have ammo/charge counters and max ammo/charge equippable
 '''
+
 from src.constants import INVENTORY, ITEMS
 def useBlaster(enemy, item):
     
