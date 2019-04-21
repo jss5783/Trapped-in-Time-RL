@@ -17,7 +17,8 @@ class Item:
         #self.useFunction = useFunction
         
 class Baddie:
-    def __init__(self, x, y, hp):
+    def __init__(self, hp, x, y, z):
         self.x = x 
-        self.y = y 
+        self.y = y
+        self.z = z
         self.hp = hp

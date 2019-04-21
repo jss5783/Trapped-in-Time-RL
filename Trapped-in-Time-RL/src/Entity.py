@@ -1,5 +1,9 @@
 '''
 ---CHANGELOG---
+2019/04/18		(JSS5783)
+				modified FistoKit to not use coordinates.
+
+
 2019/04/16		(Bryan)
 				Updated Item classes (Blaster, Shield, and Fisto Kit) as needed
 				Updated Player and Enemy classes enough for item testing (may need further updating)
@@ -20,7 +24,8 @@ from src.constants import *
 
 
 class Entity:
-	def __init__(self, cInSymbol='?', strInName="UNDEFINED (please report to developers)", clrInForeground=MAGENTA_DARK, clrInBackground=GREEN_DARK, bInIsSolid=True, bInIsTranslucent=False):
+	#TODO: Might add coordinates back to Entity later, along with getters/setters.
+	def __init__(self, intInX, intInY, intInZ, cInSymbol='?', strInName="UNDEFINED (please report to developers)", clrInForeground=MAGENTA_DARK, clrInBackground=GREEN_DARK, bInIsSolid=True, bInIsTranslucent=False):
 		'''
 			Entity constructor.
 			Uses ear-searing default colors to help identify generation errors.
@@ -31,6 +36,13 @@ class Entity:
 		self.clrBackground = clrInBackground
 		self.bIsSolid = bInIsSolid
 		self.bIsTransparent = bInIsTranslucent
+		self.intX = intInX
+		self.intY = intInY
+		if (intInZ == -1):		#TODO: get Player Z	
+			self.intX = 1
+		else:
+			self.intZ = intInZ
+		
 	#END __init__(self, cInSymbol='?', strInName="UNDEFINED (please report to developers)", clrInForeground=MAGENTA_DARK, clrInBackground=GREEN_DARK, bInIsSolid=True, bInIsTranslucent=False)
 	
 	
@@ -94,30 +106,75 @@ class Entity:
 		'''
 		return self.clrBackground
 	#END getBGColor(self)
+	
+	
+	def setX(self, intInX):
+		'''
+		Set Entity x-coordinate.
+		'''
+		self.intX = intInX
+	#END setX(self, intInX)
+	
+	def getX(self):
+		'''
+		Get Entity x-coordinate.
+		'''
+		return self.intX
+	#END getX(self)
+	
+	
+	def setY(self, intInY):
+		'''
+		Set Entity y-coordinate.
+		'''
+		self.intY = intInY
+	#END setY(self, intInY)
+	
+	def getY(self):
+		'''
+		Get Entity y-coordinate.
+		'''
+		return self.intY
+	#END getY(self)
+	
+	
+	def setZ(self, intInZ):
+		'''
+		Set Entity z-coordinate.
+		'''
+		self.intZ = intInZ
+	#END setZ(self, intInZ)
+	
+	def getZ(self):
+		'''
+		Get Entity z-coordinate.
+		'''
+		return self.intZ
+	#END getZ(self)
 #END Entity
 
 
 class Wall(Entity):
-	def __init__(self):
-		super().__init__('#', "wall", WHITE, BLACK, True, False)
+	def __init__(self, intInX, intInY, intInZ):
+		super().__init__(intInX, intInY, intInZ, '#', "wall", WHITE, BLACK, True, False)
 #END Wall(Entity)
 
 
 class Floor(Entity):
-	def __init__(self):
-		super().__init__('.', "floor", GRAY_LIGHT, BLACK, False, True)
+	def __init__(self, intInX, intInY, intInZ):
+		super().__init__(intInX, intInY, intInZ, '.', "floor", GRAY_LIGHT, BLACK, False, True)
 #END Floor(Entity)
 
 
 class Enemy(Entity):
-	def __init__(self):
-		super().__init__('E', "enemy", ORANGE_LIGHT, BLACK, True, True)
+	def __init__(self, intInX, intInY, intInZ):
+		super().__init__(intInX, intInY, intInZ, 'E', "enemy", ORANGE_LIGHT, BLACK, True, True)
 #END Enemy(Entity)
 
 
 class Player(Entity):
-	def __init__(self, hp=1, damage=0):
-		super().__init__('@', "player", WHITE, BLACK, True, True)
+	def __init__(self, intInX, intInY, intInZ, hp=1, damage=0):
+		super().__init__(intInX, intInY, intInZ, '@', "player", WHITE, BLACK, True, True)
 		self.hp = hp
 		self.damage = damage
 #END Player(Entity)
@@ -142,35 +199,34 @@ class Player(Entity):
 
 
 class Shield(Entity):
-	def __init__(self, x, y, charges, maxCharges):
-		super().__init__('¿', "Shield", BLUE_LIGHT, BLACK, False, True)
-		self.x = x
-		self.y = y
+	def __init__(self, intInX, intInY, intInZ, charges, maxCharges):
+		super().__init__(intInX, intInY, intInZ, '¿', "Shield", BLUE_LIGHT, BLACK, False, True)
+		self.x = intInX
+		self.y = intInY
 		self.charges = charges
 		self.maxCharges = maxCharges
 
 
 class FistoKit(Entity):
-	def __init__(self, x, y, charges, maxCharges, damage):
+# 	def __init__(self, x, y, charges=2, maxCharges=2, damage=5):
+	def __init__(self, intInX, intInY, intInZ, charges=2, maxCharges=2, damage=5):
 		'''
 		Melee weapon.
 		'''
-		super().__init__('¡', "Fisto Kit", BLUE_LIGHT, BLACK, False, True)
-		self.x = x
-		self.y = y
+		super().__init__(intInX, intInY, intInZ, '¡', "Fisto Kit", BLUE_LIGHT, BLACK, False, True)
 		self.charges = charges
 		self.maxCharges = maxCharges
 		self.damage = damage
 
 
 class Blaster(Entity):
-	def __init__(self, x, y, ammo, maxAmmo, damage):
+	def __init__(self, intInX, intInY, intInZ, ammo, maxAmmo, damage):
 		'''
 		Ranged weapon.
 		'''
-		super().__init__(',', "Blaster", BLUE_LIGHT, BLACK, False, True)
-		self.x = x
-		self.y = y
+		super().__init__(intInX, intInY, intInZ, ',', "Blaster", BLUE_LIGHT, BLACK, False, True)
+		self.x = intInX
+		self.y = intInY
 		self.ammo = ammo
 		self.maxAmmo = maxAmmo
 		self.damage = damage
@@ -180,8 +236,8 @@ class Portal(Entity):
 	'''
 	Level's end.
 	'''
-	def __init__(self):
-		super().__init__('☼', "portal", BLUE_LIGHT, BLACK, True, True)
+	def __init__(self, intInX, intInY, intInZ):
+		super().__init__(intInX, intInY, intInZ, '☼', "portal", GREEN_LIGHT, BLACK, True, True)
 #END Portal(Entity)
 
 
@@ -189,8 +245,8 @@ class GateOpen(Entity):
 	'''
 	Open state of gate.
 	'''
-	def __init__(self):
-		super().__init__('▬', "gate (open)", BLUE_LIGHT, BLACK, False, True)
+	def __init__(self, intInX, intInY, intInZ):
+		super().__init__(intInX, intInY, intInZ, '▬', "gate (open)", BLUE_LIGHT, BLACK, False, True) 
 #END GateOpen(Entity)
 
 
@@ -198,6 +254,6 @@ class GateClosed(Entity):
 	'''
 	Closed state of gate.
 	'''
-	def __init__(self):
-		super().__init__('╬', "gate (closed)", BLACK, ORANGE_LIGHT, True, False)
+	def __init__(self, intInX, intInY, intInZ):
+		super().__init__(intInX, intInY, intInZ, '╬', "gate (closed)", BLACK, ORANGE_LIGHT, True, False)
 #END GateClosed(Entity)

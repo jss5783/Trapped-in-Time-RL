@@ -1,5 +1,12 @@
 '''
 ---CHANGELOG---
+2019/04/20:		(JSS5783)
+				Created/implemented moveEntityTo (with updatePlayerPosition modified to match), interactWith, and activatePortal.
+
+2019/04/18:		(JSS5783)
+				Continued updates/bugfixes to various Map-querying functions.
+				Debug: updateFoV no longer just refreshes within a limited radius.
+
 2019/04/17:		(JSS5783)
 				Added removeEntityAt.
 				addEntityAt, getEntityAt, getEntityIndexAt, and removeEntityAt all work now, with updating FoV.
@@ -81,7 +88,7 @@ class Map:
 	Each timeline has FoV/walkability/transparency + entities
 	entities only check in same timeline, time-traveling aside
 	'''
-	def __init__(self, intInWidth, intInHeight, intInDepth): 
+	def __init__(self, intInWidth, intInHeight, intInDepth, intInLevel=-1): 
 		self.intWidth = intInWidth
 		self.intHeight = intInHeight
 		self.intDepth = intInDepth	#might be better to call this something else when floors are implemented. NOTE: like intWidth and intheight, this is 1-indexed
@@ -92,6 +99,12 @@ class Map:
 		self.aBoolIsExplored = [[[bool(False) for z in range(self.intDepth)] for y in range(self.intHeight)] for x in range(self.intWidth)]	#is tile known by player and therefore should be visible (and not complete blackness)?
 		self.aSymbolMemory = [[[str() for z in range(self.intDepth)] for y in range(self.intHeight)] for x in range(self.intWidth)]	#top entity char is stored when moving out of FoV
 			#technically a String because Python char differs from Java char. Don't store more than 1 character (the symbol) in it
+		
+		 #floor level, the same way other games would have B1F/B2F/B3F or 1F/2F/3F, etc.
+		if intInLevel == -1:
+			self.intLevel = 0
+		else:
+			self.intLevel = intInLevel
 		
 		self.intPlayerX = -1	#TODO: better location/error marker
 		self.intPlayerY = -1
@@ -136,31 +149,36 @@ class Map:
 	# 			print(self.strCurrentLine)
 				for x in range(self.intWidth):
 					if (self.strCurrentLine[x] == "."):
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )	#get last used ID
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )	#get last used ID
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
 						
 					elif (self.strCurrentLine[x] == "@"):
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )	#add Floor beneath Player
-						self.aLstEntities[x][y][intInTimeline].append(Player() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )	#add Floor beneath Player
+						self.aLstEntities[x][y][intInTimeline].append(Player(x, y, intInTimeline) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
+# 						self.aLstEntities[x][y][intInTimeline][len(self.aLstEntities[x][y][intInTimeline]) - 1].setX(x)
+# 						self.aLstEntities[x][y][intInTimeline][len(self.aLstEntities[x][y][intInTimeline]) - 1].setY(y)
+# 						self.aLstEntities[x][y][intInTimeline][len(self.aLstEntities[x][y][intInTimeline]) - 1].setZ(intInTimeline)
+						
+						#update known Player coordinates
 						self.intPlayerX = x
 						self.intPlayerY = y
 						self.intPlayerZ = intInTimeline
 						if DEBUG_MODE: print(self.intPlayerX, self.intPlayerY, self.intPlayerZ)
 						#TODO: set Player x, y so map refreshes properly (at -1, -1 right now)
 					elif (self.strCurrentLine[x] == "E"):
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(Enemy() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
+						self.aLstEntities[x][y][intInTimeline].append(Enemy(x, y, intInTimeline) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
-						enemy = Baddie(x, y, 4)
+						enemy = Baddie(4, x, y, intInTimeline)
 						ENEMIES.append(enemy)
 						
 					elif (self.strCurrentLine[x] == "!"):	#place random item
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
 # 						self.intResult = self.rng.randint(0,2)
 						randItem = randint(0,2)
 						
@@ -186,44 +204,42 @@ class Map:
 # 							self.aLstEntities[x][y][intInTimeline].append(Ammo() )
 						
 						if randItem == 0:
-							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y, 2, 2, 5) )
-							item = FistoKit(x, y, 2, 2, 5)
-							ITEMS.append(item)
-							print(item.strName)
+# 							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y) )
+# 							item = FistoKit(x, y)
+							self.aLstEntities[x][y][intInTimeline].append(FistoKit(x, y, intInTimeline) )
+							item = FistoKit(x, y, intInTimeline)
 						elif randItem == 1:
-							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, 5, 5) )
-							item = Shield(x, y, 5, 5)
-							ITEMS.append(item)
-							print(item.strName)
+							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, intInTimeline, 5, 5) )
+							item = Shield(x, y, intInTimeline, 5, 5)
 						elif randItem == 2:
-							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, 4, 4, 2) )
-							item = Blaster(x, y, 4, 4, 2)
-							ITEMS.append(item)
-							print(item.strName)
+							self.aLstEntities[x][y][intInTimeline].append(Blaster( x, y, intInTimeline, 4, 4, 2) )
+							item = Blaster(x, y, intInTimeline, 4, 4, 2)
+						ITEMS.append(item)
+						print(item.strName)
 						
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
 					elif (self.strCurrentLine[x] == "☼"):
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(Portal() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
+						self.aLstEntities[x][y][intInTimeline].append(Portal(x, y, intInTimeline) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
 					elif (self.strCurrentLine[x] == "▬"):
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(GateOpen() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
+						self.aLstEntities[x][y][intInTimeline].append(GateOpen(x, y, intInTimeline) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = True		#walkable? (not solid?)
 						
 					elif (self.strCurrentLine[x] == "╬"):
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(GateClosed() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
+						self.aLstEntities[x][y][intInTimeline].append(GateClosed(x, y, intInTimeline) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = False	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
 					else:	#assuming that blank space/errors should all be Walls for now
-						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(Wall() )
+						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
+						self.aLstEntities[x][y][intInTimeline].append(Wall(x, y, intInTimeline) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = False	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
@@ -233,23 +249,21 @@ class Map:
 	#ENF loadMapFile(self, strFilePath, intInTimeline)
 
 
-	def getTopIndex(self, x, y, z=-1):
+	def getTopIndex(self, x, y, intInZ=-1):
 		'''
 		getTopIndexAtTile
 		Returns top Entity's index at given coordinates.
 			(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
 		Otherwise, return floor tile.
 		'''
-		if (z == -1):	#if no z value given, use player's z-coord
-			if len(self.aLstEntities[x][y][self.getPlayerZ() ] ) > 0:
-				return len(self.aLstEntities[x][y][self.getPlayerZ() ] ) - 1
-			else:
-				return 0
-		else:	#if z value given
-			if len(self.aLstEntities[x][y][z] ) > 0:
-				return len(self.aLstEntities[x][y][z] ) - 1
-			else:
-				return 0
+		if (intInZ == -1):	#if no z value given, use player's z-coord
+			intInZ = self.getPlayerZ()
+		
+		if len(self.aLstEntities[x][y][intInZ] ) > 0:
+# 			if DEBUG_MODE: print("[getTopIndex] len =", len(self.aLstEntities[x][y][intInZ] ))
+			return len(self.aLstEntities[x][y][intInZ] ) - 1
+		else:
+			return 0
 	#END getTopIndex(self, x, y, z=-1):
 	
 	
@@ -262,13 +276,14 @@ class Map:
 		if (intInZ == -1):
 			intInZ = self.getPlayerZ()
 		
-		self.intEntityIndex = 0
+		self.intEntityIndex = -1
 		
 		for i in range(len(self.aLstEntities[intInX][intInY][intInZ]) ):
-			if isinstance(self.aLstEntities[intInX][intInY][intInZ][i], type(inEntityType) ):
+			print(inEntityType)
+			if isinstance(self.aLstEntities[intInX][intInY][intInZ][i], inEntityType):
 				self.intEntityIndex = i
 # 		print(self.intEntityIndex)
-		
+		print(self.intEntityIndex)
 		return self.intEntityIndex
 	#END getEntityIndexAt(self, inEntityType, intInX, intInY, intInZ=-1)
 	
@@ -280,7 +295,6 @@ class Map:
 			TODO (real version): Drop items in random available space (in first free space when first implementing). Probably use a boolean canPlaceItem[x][y], pick until True (placeable) is found, and then use those random x and y values in aLstEntities[randX][randY][intPlayerZ].
 				Do multiple times/in a pattern for AoEs.
 			Return -1 if cannot add Entity.
-			TODO: add/remove blocking. Removed enemy = walkable.
 		'''
 		if (intInZ == -1):
 			intInZ = self.getPlayerZ()
@@ -298,7 +312,7 @@ class Map:
 		elif isinstance(inEntity, GateOpen):
 			self.strInEntity = "TERRAIN"	#GateOpen
 		elif isinstance(inEntity, Floor):
-			self.strInEntity = "FLOOR"	#floor or GateOpen (TODO (real version): separate this out, just in case of "Summon Gate" skill or something that might stack Gates.
+			self.strInEntity = "FLOOR"	#floor; separated this out, just in case of "Summon Gate" skill or something that might stack Gates.
 		else:
 			self.strInEntity = "[ERROR] unknown strInEntity"
 			
@@ -443,18 +457,21 @@ class Map:
 	#END removeEntityAtIndex(self, intInEntityIndex, intInX, intInY, intInZ=-1)
 	
 
-	def getTopEntity(self, x, y, z=-1):
+	def getTopEntity(self, intInX, intInY, intInZ=-1):
 		'''
 		Returns top Entity at given coordinates.
 			(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
 		(Otherwise, return floor tile.)
 		'''
-		if (z == -1):	#if no z value given, use player's z-coord
-			return self.aLstEntities[x][y][self.getPlayerZ()][self.getTopIndex(x, y, self.getPlayerZ() ) ]
-# 			return self.getTopEntity(x, y, self.getPlayerZ())
-		else:	#if z value given
-# 			return self.getTopEntity(x, y, z)
-			return self.aLstEntities[x][y][z][self.getTopIndex(x, y, z) ]
+		if (intInZ == -1):	#if no z value given, use player's z-coord
+			intInZ = self.getPlayerZ()
+		
+		
+		return self.aLstEntities[intInX][intInY][intInZ][self.getTopIndex(intInX, intInY, intInZ) ]
+# # 			return self.getTopEntity(x, y, self.getPlayerZ())
+# 		else:	#if z value given
+# # 			return self.getTopEntity(x, y, z)
+# 			return self.aLstEntities[x][y][z][self.getTopIndex(x, y, z) ]
 	#END getTopEntity(self, x, y, z=-1)
 # # 
 # 	def getTopEntity(self, x, y, z=-1):
@@ -570,48 +587,132 @@ class Map:
 # 		#else append
 
 	#TODO: finish implementation of addEntityAt, getEntityAt, and getEntityIndexAt.
-	def updatePlayerPosition(self, x, y, z=-1):
+	def updatePlayerPosition(self, inLog, x, y, z=-1):
 		'''
 		Tries to move Player to given coordinates.
 		Used for time-traveling.
 		'''
-# 		if (self.alstObject[self.intPlayerX][self.intPlayerY][self.top(x, y)] == "@"):
-# 		self.alstObject[self.intPlayerX][self.intPlayerY].remove("@")
-# 		for i in range(len(self.alstObject[x][y]) ):
-# 			print("[DEBUG] updatePlayerPosition at ", x, ",", y, ":", self.alstObject[x][y])
-		if (DEBUG_MODE): print("[DEBUG] updatePlayerPosition from", self.getPlayerX(), self.getPlayerY(), self.getPlayerZ(), "to", x, ",", y, ",", z, ":", self.aLstEntities[x][y][z])
+# # 		if (self.alstObject[self.intPlayerX][self.intPlayerY][self.top(x, y)] == "@"):
+# # 		self.alstObject[self.intPlayerX][self.intPlayerY].remove("@")
+# # 		for i in range(len(self.alstObject[x][y]) ):
+# # 			print("[DEBUG] updatePlayerPosition at ", x, ",", y, ":", self.alstObject[x][y])
+# 		if (DEBUG_MODE): print("[DEBUG] updatePlayerPosition from", self.getPlayerX(), self.getPlayerY(), self.getPlayerZ(), "to", x, ",", y, ",", z, ":", self.aLstEntities[x][y][z])
+# 		self.bVerifyTimeTravel = False
+# 		self.bIsSafe = True
+# 		self.bIsBlocked = True
+# 		
+# # 		self.alstObject[x][y].append(Player() )
+# 		if (z != -1 and z != self.getPlayerZ() ):
+# 			self.bVerifyTimeTravel = True
+# 		elif (z == -1):	#probably fine with just else here, but just in case for now
+# 			z = self.getPlayerZ()
+# 			self.bVerifyTimeTravel = False
+# 		
+# 		#is destination within Map bounds?
+# 		if (x >= 0 and x < self.intWidth and y >= 0 and y < self.intHeight and z >= 0 and z < self.intDepth):
+# 			if DEBUG_MODE: print("[DEBUG] Destination is walkable?", self.aTcodMaps[z].walkable[y][x])
+# 			if (self.isWalkable(x, y, z) == True):		#is Player's destination blocked?
+# 		# 		print(type(inMap.getTopEntity(inMap.aTimelines[1].intPlayerX,inMap.aTimelines[1].intPlayerY)))
+# 				self.bIsBlocked = False
+# 			else:
+# 				self.bIsBlocked = True
+# 		
+# 		#TODO: any movement should verify that destination works; only z-travel should do "safety check"
+# 			if (self.bVerifyTimeTravel == True):	#if time-traveling, is it safe around the Player? (eventually, Player should be able to risky-timeline-jump; maybe instant-travel but missed turn instead of wait-and-then-(safe)-travel-for-a-free-ranged-attack)
+# 					#BUGFIX: all movement was 1SE because x was used as "incrementing x-coordinate" for testing here, but also x as "passed x-coordinate". This is why "intInX" is a good idea.
+# 				for yCounter in range(self.getPlayerY() - 1, self.getPlayerY() + 2):
+# 					for xCounter in range(self.getPlayerX() - 1, self.getPlayerX() + 2):
+# 						if DEBUG_MODE: print("[DEBUG] Testing for safe time travel: ", self.getTopEntity(xCounter,yCounter,z) )
+# 	# 					self.aLstEntities[x][y][z]
+# 						#TODO: if timelines use the same overall layout, add Wall+Gate (open AND closed) to checks. Other timeline: "has Enemy, item, or even Portal?"
+# 	# 					if (type(self.getTopEntity(x,y,z) ) != Floor and type(self.getTopEntity(x,y,z) ) != Player) :
+# # 						if (isinstance(self.getTopEntity(xCounter,yCounter,z), Floor) == False or type(self.getTopEntity(xCounter,yCounter,z) ) != Wall and type(self.getTopEntity(xCounter,yCounter,z) ) != GateClosed and type(self.getTopEntity(xCounter,yCounter,z) ) != GateClosed):
+# # 						if (isinstance(self.getTopEntity(xCounter,yCounter,z), Enemy) or isinstance(self.getTopEntity(xCounter,yCounter,z), ShieldConsumable) or isinstance(self.getTopEntity(xCounter,yCounter,z), HealthConsumable) or isinstance(self.getTopEntity(xCounter,yCounter,z), Ammo) or isinstance(self.getTopEntity(xCounter,yCounter,z), Portal)):
+# 						if (isinstance(self.getTopEntity(xCounter,yCounter,z), Enemy) or isinstance(self.getTopEntity(xCounter,yCounter,z), Portal)):	#only "risky" if Enemy or Portal - not Item
+# 							self.bIsSafe = False
+# 	# 			if (type(inMap.getTopEntity(inMap.aTimelines[self.intTargetTimeline].intPlayerX,inMap.aTimelines[self.intTargetTimeline].intPlayerY)) != Floor and type(inMap.getTopEntity(inMap.aTimelines[self.intTargetTimeline].intPlayerX,inMap.aTimelines[self.intTargetTimeline].intPlayerY)) != Player):
+# 				
+# 						
+# # 			if self.bIsBlocked == False and self.bIsSafe == False:
+# # 				if DEBUG_MODE: print("[DEBUG] can travel, something \"large\"(wall/enemy/portal?) nearby. Time-travel anyway?")
+# # 			elif self.bIsBlocked == False and self.bIsSafe == True:
+# # 				if DEBUG_MODE: print("[DEBUG] can travel safely")
+# # # 				self.updatePlayerPosition(self.getPlayerX(),self.getPlayerY(),self.getPlayerZ())
+# # 				#TODO: check if destination blocked)
+# # 				self.aTcodMaps[self.intPlayerZ].walkable[self.intPlayerY][self.intPlayerX] = True	#NOTE: after something blocking moves, must update origin's walkability; TODO: also need to update when something dies
+# # 				self.aLstEntities[x][y][z].append( self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].pop() )	#TODO: make sure there are no weird situations which would grab not-a-Player
+# # 				self.intPlayerX = x
+# # 				self.intPlayerY = y
+# # 				self.intPlayerZ = z
+# # 				self.aTcodMaps[self.intPlayerZ].walkable[self.intPlayerY][self.intPlayerX] = False	#new location is blocked, of course
+# # 				if (DEBUG_MODE): print("[DEBUG] updatePlayerPosition: now at", self.getPlayerX(), self.getPlayerY(), self.getPlayerZ() )
+# # 	# 			self.alstObject[self.intPlayerX][self.intPlayerY].append(Player() )
+# # 	# 			self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].append
+# # 				self.updateFoV()
+# # 			else:
+# # 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
+# 			if self.bIsBlocked == False:	#removed "safe-check" - felt too clunky; better to show in GUI with "could be Enemy, Item, or Portal" for tension
+# 				if DEBUG_MODE: print("[DEBUG] can travel safely")
+# # 				self.updatePlayerPosition(self.getPlayerX(),self.getPlayerY(),self.getPlayerZ())
+# 				#TODO: check if destination blocked)
+# 				self.aTcodMaps[self.intPlayerZ].walkable[self.intPlayerY][self.intPlayerX] = True	#NOTE: after something blocking moves, must update origin's walkability; TODO: also need to update when something dies
+# 				self.aLstEntities[x][y][z].append( self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].pop() )	#TODO: make sure there are no weird situations which would grab not-a-Player
+# 				self.updateMemory()
+# 				self.intPlayerX = x
+# 				self.intPlayerY = y
+# 				self.intPlayerZ = z
+# 				self.aTcodMaps[self.intPlayerZ].walkable[self.intPlayerY][self.intPlayerX] = False	#new location is blocked, of course
+# 				if (DEBUG_MODE): print("[DEBUG] updatePlayerPosition: now at", self.getPlayerX(), self.getPlayerY(), self.getPlayerZ() )
+# 	# 			self.alstObject[self.intPlayerX][self.intPlayerY].append(Player() )
+# 	# 			self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].append
+# 				self.updateFoV()
+# 			else:
+# 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
+# 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
+		self.moveEntityTo(self.getTopEntity(self.intPlayerX, self.intPlayerY, self.intPlayerZ), inLog, x, y, z)
+	#END updatePlayerPosition(self, x, y, z=-1):
+	
+	
+	def moveEntityTo(self, entInEntity : Entity, inLog : MessageLog, intInX : int, intInY : int, intInZ=-1):
+		'''
+		Tries to move given Entity to given coordinates.
+		If occupied in same timeline, interact with obstruction's top Entity.
+		Used for time-traveling.
+		'''
+# 		if (DEBUG_MODE): print("[DEBUG] moveEntityTo from", self.getX(), self.getY(), self.getZ(), "to", intInX, ",", intInY, ",", intInZ, ":", self.aLstEntities[intInX][intInY][intInZ])
 		self.bVerifyTimeTravel = False
 		self.bIsSafe = True
 		self.bIsBlocked = True
 		
-# 		self.alstObject[x][y].append(Player() )
-		if (z != -1 and z != self.getPlayerZ() ):
+		if (intInZ != -1 and intInZ != entInEntity.getZ() ):
 			self.bVerifyTimeTravel = True
-		elif (z == -1):	#probably fine with just else here, but just in case for now
-			z = self.getPlayerZ()
+		elif (intInZ == -1):	#probably fine with just else here, but just in case for now
+			intInZ = entInEntity.getZ()
 			self.bVerifyTimeTravel = False
 		
 		#is destination within Map bounds?
-		if (x >= 0 and x < self.intWidth and y >= 0 and y < self.intHeight and z >= 0 and z < self.intDepth):
-			if DEBUG_MODE: print("[DEBUG] Destination is walkable?", self.aTcodMaps[z].walkable[y][x])
-			if (self.isWalkable(x, y, z) == True):		#is Player's destination blocked?
+		if (intInX >= 0 and intInX < self.intWidth and intInY >= 0 and intInY < self.intHeight and intInZ >= 0 and intInZ < self.intDepth):
+			if DEBUG_MODE: print("[DEBUG] Walkable from", entInEntity.getX(), entInEntity.getY(), entInEntity.getZ(), "to", intInX, intInY, intInZ, "=", self.aTcodMaps[intInZ].walkable[intInY][intInX])
+			
+			if (self.isWalkable(entInEntity, intInX, intInY, intInZ) == True):		#is Player's destination blocked?
 		# 		print(type(inMap.getTopEntity(inMap.aTimelines[1].intPlayerX,inMap.aTimelines[1].intPlayerY)))
 				self.bIsBlocked = False
 			else:
 				self.bIsBlocked = True
 		
-		#TODO: any movement should verify that destination works; only z-travel should do "safety check"
+		#verify that destination works; only z-travel should do "safety check"
 			if (self.bVerifyTimeTravel == True):	#if time-traveling, is it safe around the Player? (eventually, Player should be able to risky-timeline-jump; maybe instant-travel but missed turn instead of wait-and-then-(safe)-travel-for-a-free-ranged-attack)
 					#BUGFIX: all movement was 1SE because x was used as "incrementing x-coordinate" for testing here, but also x as "passed x-coordinate". This is why "intInX" is a good idea.
-				for yCounter in range(self.getPlayerY() - 1, self.getPlayerY() + 2):
-					for xCounter in range(self.getPlayerX() - 1, self.getPlayerX() + 2):
-						if DEBUG_MODE: print("[DEBUG] Testing for safe time travel: ", self.getTopEntity(xCounter,yCounter,z) )
+				if DEBUG_MODE: print("[DEBUG] Testing for safe time travel:")
+				for yCounter in range(entInEntity.getY() - 1, entInEntity.getY() + 2):
+					for xCounter in range(entInEntity.getX() - 1, entInEntity.getX() + 2):
+						if DEBUG_MODE: print("\t(" + str(xCounter) + "," + str(yCounter) + "," + str(intInZ) + ") = " + str(type(self.getTopEntity(xCounter,yCounter,intInZ) ) ) )
 	# 					self.aLstEntities[x][y][z]
 						#TODO: if timelines use the same overall layout, add Wall+Gate (open AND closed) to checks. Other timeline: "has Enemy, item, or even Portal?"
 	# 					if (type(self.getTopEntity(x,y,z) ) != Floor and type(self.getTopEntity(x,y,z) ) != Player) :
 # 						if (isinstance(self.getTopEntity(xCounter,yCounter,z), Floor) == False or type(self.getTopEntity(xCounter,yCounter,z) ) != Wall and type(self.getTopEntity(xCounter,yCounter,z) ) != GateClosed and type(self.getTopEntity(xCounter,yCounter,z) ) != GateClosed):
 # 						if (isinstance(self.getTopEntity(xCounter,yCounter,z), Enemy) or isinstance(self.getTopEntity(xCounter,yCounter,z), ShieldConsumable) or isinstance(self.getTopEntity(xCounter,yCounter,z), HealthConsumable) or isinstance(self.getTopEntity(xCounter,yCounter,z), Ammo) or isinstance(self.getTopEntity(xCounter,yCounter,z), Portal)):
-						if (isinstance(self.getTopEntity(xCounter,yCounter,z), Enemy) or isinstance(self.getTopEntity(xCounter,yCounter,z), Portal)):	#only "risky" if Enemy or Portal - not Item
+						if (isinstance(self.getTopEntity(xCounter,yCounter,intInZ), Enemy) or isinstance(self.getTopEntity(xCounter,yCounter,intInZ), Portal)):	#only "risky" if Enemy or Portal - not Item
 							self.bIsSafe = False
 	# 			if (type(inMap.getTopEntity(inMap.aTimelines[self.intTargetTimeline].intPlayerX,inMap.aTimelines[self.intTargetTimeline].intPlayerY)) != Floor and type(inMap.getTopEntity(inMap.aTimelines[self.intTargetTimeline].intPlayerX,inMap.aTimelines[self.intTargetTimeline].intPlayerY)) != Player):
 				
@@ -634,26 +735,102 @@ class Map:
 # 				self.updateFoV()
 # 			else:
 # 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
-			if self.bIsBlocked == False:	#removed "safe-check" - felt too clunky; better to show in GUI with "could be Enemy, Item, or Portal" for tension
+			if self.bIsBlocked == False and isinstance(entInEntity, Floor) == False:	#removed "safe-check" - felt too clunky; better to show in GUI with "could be Enemy, Item, or Portal" for tension
+					#can't move a Floor, lest the Python list be left empty (nothing to draw = crash)
 				if DEBUG_MODE: print("[DEBUG] can travel safely")
 # 				self.updatePlayerPosition(self.getPlayerX(),self.getPlayerY(),self.getPlayerZ())
 				#TODO: check if destination blocked)
-				self.aTcodMaps[self.intPlayerZ].walkable[self.intPlayerY][self.intPlayerX] = True	#NOTE: after something blocking moves, must update origin's walkability; TODO: also need to update when something dies
-				self.aLstEntities[x][y][z].append( self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].pop() )	#TODO: make sure there are no weird situations which would grab not-a-Player
-				self.updateMemory()
-				self.intPlayerX = x
-				self.intPlayerY = y
-				self.intPlayerZ = z
-				self.aTcodMaps[self.intPlayerZ].walkable[self.intPlayerY][self.intPlayerX] = False	#new location is blocked, of course
-				if (DEBUG_MODE): print("[DEBUG] updatePlayerPosition: now at", self.getPlayerX(), self.getPlayerY(), self.getPlayerZ() )
+				self.aTcodMaps[entInEntity.getZ()].walkable[entInEntity.getY()][entInEntity.getX()] = True	#NOTE: after something blocking moves, must update origin's walkability; TODO: also need to update when something dies
+				self.aLstEntities[intInX][intInY][intInZ].append( self.aLstEntities[entInEntity.getX()][entInEntity.getY()][entInEntity.getZ()].pop() )	#TODO: make sure there are no weird situations which would grab not-a-Player
+				if isinstance(entInEntity, Player):
+					self.updateMemory()
+				entInEntity.setX(intInX)
+				entInEntity.setY(intInY)
+				entInEntity.setZ(intInZ)
+				if (isinstance(entInEntity, Player) ):
+					self.intPlayerX = intInX
+					self.intPlayerY = intInY
+					self.intPlayerZ = intInZ
+				self.aTcodMaps[entInEntity.getZ()].walkable[entInEntity.getY()][entInEntity.getX()] = False	#new location is blocked, of course
+				if (DEBUG_MODE): print("[DEBUG] moveEntityTo: now at", entInEntity.getX(), entInEntity.getY(), entInEntity.getZ() )
 	# 			self.alstObject[self.intPlayerX][self.intPlayerY].append(Player() )
 	# 			self.aLstEntities[self.intPlayerX][self.intPlayerY][self.intPlayerZ].append
-				self.updateFoV()
+				if isinstance(entInEntity, Player):
+					self.updateFoV()
+				return True		#successful move = consume turn
 			else:
-				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
+				if DEBUG_MODE: print("[DEBUG] can't time-travel; Entity position blocked in target timeline; may or may not be unsafe as well")
+				print(entInEntity.getZ(), intInZ)
+				if (entInEntity.getZ() == intInZ):	#only try to interact with target if in same timeline; no attacking from another timeline
+					return self.interactWith(inLog, entInEntity, intInX, intInY, intInZ)	#successful action = consume turn; unsuccessful turn/free action = do NOT consume turn 
 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
-	#END updatePlayerPosition(self, x, y, z=-1):	
+			return False	#unsuccessful turn/free action = do NOT consume turn
+	#END moveEntityTo(self, entInEntity : Entity, intInX, intInY, intInZ=-1)
+	
+	
+	def interactWith(self, inLog, entInOrigin, intInX, intInY, intInZ=-1):
+		'''
+		Acting Entity (entInOrigin) interacts with top Entity in tile of coordinates (intInX, intInY, intInZ)
 		
+		If occupied in same timeline, interact with obstruction's top Entity.
+		Player (Enemy, Portal), Enemy (Player); else do nothing
+			if Enemy
+				if melee equipped, Player.melee(Enemy); if ranged, range Enemy
+			if Portal
+				activate win (Portal might just be dummy Entity, actually)
+		Enemy
+			if Player
+				attack Player
+		(Ranged = ent.interactWith(coords for tile top entity) )
+		
+		'''
+		if intInZ == -1:
+			intInZ = self.getPlayerZ()
+		
+		self.entTarget = self.getTopEntity(intInX, intInY, intInZ)
+		self.bConsumeTurn = False
+		
+		if isinstance(entInOrigin, Player):	#if interactee is Player
+			if isinstance(self.entTarget, Enemy):
+				if DEBUG_MODE: print("[interactWith] Player attacks Enemy:", type(self.entTarget) )
+# 				Player.attack(self.entTarget)
+				self.bConsumeTurn = True
+			elif isinstance(self.entTarget, Portal):
+				self.activatePortal(inLog)
+				self.bConsumeTurn = True
+			else:
+				if DEBUG_MODE: print("[interactWith] Player does not interact with", type(self.entTarget) )
+				
+		elif isinstance(entInOrigin, Enemy):	#if interactee is Enemy
+			if isinstance(self.entTarget, Player):
+				if DEBUG_MODE: print("[interactWith] Enemy attacks", type(self.entTarget) )
+# 				entInOrigin.attack(self.entTarget)
+				self.bConsumeTurn = True
+			else:
+				if DEBUG_MODE: print("[interactWith] Enemy does not interact with", type(self.entTarget) )
+				
+		else:	#not Player/Enemy; something like Portal that does not act on its own
+			if DEBUG_MODE: print("[interactWith] entInOrigin is not Player/Enemy; is", type(entInOrigin) )
+	
+		return self.bConsumeTurn
+	#END interactWith(self, inLog, entInOrigin, intInX, intInY, intInZ=-1)
+	
+	
+	def activatePortal(self, inLog):
+		'''
+		Does portal stuff, like handling upgrades, setting up the next set of maps, and "game win".
+		TODO (real): Add more than just a placeholder message.
+		'''
+		if (self.intLevel == 0):
+			inLog.addMessage("The portal whispers to you as you reach out...")
+			self.intLevel += 1
+			inLog.addMessage("-DEMO COMPLETE! YOU WIN!-")
+			inLog.addMessage("SYSTEM: Press [ESC] to quit TiTRL.")
+		else:
+			inLog.addMessage("You shrug. Demo complete = no more levels.")
+			inLog.addMessage("SYSTEM: Press [ESC] to quit TiTRL.")
+	#END activatePortal(self, inLog)
+	
 	
 	def updateMemory(self, z=-1):
 		'''
@@ -691,7 +868,12 @@ class Map:
 					self.aTcodMaps[0].fov[y][x] = False
 					
 		#updates Player-containing timeline
-		self.aTcodMaps[self.intPlayerZ].compute_fov(self.intPlayerX, self.intPlayerY, FOV_RADIUS, True, tcod.FOV_SHADOW)
+		if (DEBUG_MODE):
+			for y in range(MAP_HEIGHT):
+				for x in range(MAP_WIDTH):
+					self.aTcodMaps[self.intPlayerZ].fov[y][x] = True
+		else:
+			self.aTcodMaps[self.intPlayerZ].compute_fov(self.intPlayerX, self.intPlayerY, FOV_RADIUS, True, tcod.FOV_SHADOW)
 	#END updateFoV(self, z=-1)
 	
 
@@ -708,14 +890,14 @@ class Map:
 		return self.intPlayerZ
 
 
-	def isWalkable(self, x, y, z=-1):
+	def isWalkable(self, entInEntity, intInX, intInY, intInZ=-1):
 		'''
 		Returns walkability status (solidity) of given coordinates.
 		'''
-		if z == -1:
-			return self.aTcodMaps[self.intPlayerZ].walkable[y][x]
+		if intInZ == -1:
+			return self.aTcodMaps[self.intPlayerZ].walkable[intInY][intInX]
 		else:
-			return self.aTcodMaps[z].walkable[y][x]
+			return self.aTcodMaps[intInZ].walkable[intInY][intInX]
 	#END isWalkable(self, x, y, z=-1)
 	
 	def isExplored(self, x, y, z=-1):

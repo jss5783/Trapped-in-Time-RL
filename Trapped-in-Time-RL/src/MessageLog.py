@@ -1,5 +1,9 @@
 '''
 ---CHANGELOG---
+2019/04/1		(JSS5783)
+				Removed debug tests.
+
+
 2019/04/17		(JSS5783)
 				addMessage updated to auto-cull old messages.
 
@@ -20,10 +24,9 @@ class MessageLog:
 		self.intWidth = MESSAGE_WIDTH
 		self.intHeight = MESSAGE_HEIGHT
 		self.lstMessageLog = []	#store strings in here
-		print(type(self.lstMessageLog))
 # 		self.alstMessageLog.append("Test String 1")
 # 		self.alstMessageLog.append("The quick brown fox jumped over the lazy dog.")
-		self.addMessage("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()")		#really long test message
+# 		self.addMessage("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()")		#really long test message
 		#eventually: Messages with colors
 
 
@@ -38,7 +41,7 @@ class MessageLog:
 				intMessageStart = i * MESSAGE_WIDTH
 				intMessageEnd = (i + 1) * MESSAGE_WIDTH
 				self.lstMessageLog.append(strInNewMessage[intMessageStart:intMessageEnd])
-				print("[DEBUG] addMessage(): " + self.lstMessageLog[len(self.lstMessageLog) - 1])
+				if DEBUG_MODE: print("[DEBUG] addMessage(): " + self.lstMessageLog[len(self.lstMessageLog) - 1])
 # 			self.alstMessageLog.append(strInNewMessage[0:MESSAGE_WIDTH])
 # 			print(self.alstMessageLog[self.alstMessageLog.__len__() - 1])
 # # 			self.alstMessageLog.append(strInNewMessage[MESSAGE_WIDTH:MESSAGE_WIDTH+strInNewMessage.__len__()])
@@ -49,6 +52,7 @@ class MessageLog:
 # 			print(self.alstMessageLog[1])
 		else:
 			self.lstMessageLog.append(strInNewMessage)
+			if DEBUG_MODE: print("[DEBUG] addMessage(): " + self.lstMessageLog[len(self.lstMessageLog) - 1])
 		
 # 		self.lstMessageLog.append(textwrap.wrap(strInNewMessage, MESSAGE_WIDTH) ) 
 		
@@ -73,18 +77,3 @@ class MessageLog:
 			y += 1
 	# 			console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
 	# 			print("message log:", MAP_WIDTH, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, self.alstMessageLog[i])
-
-'''
-	LOG:
-		1
-		2
-		3
-	oldLog[] = LOG
-	newMessage[]: abc (too long for 1 line)
-	log[] = oldLog + newMessage.split
-		log is new/rewritten every time function is called
-	if log.len <= 5
-		print from 0 to 4
-	else
-		print from log.len - 4 to log.len - 1
-'''
