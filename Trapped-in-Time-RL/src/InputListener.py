@@ -3,6 +3,10 @@
 2019/04/20:		(JSS5783)
 				Updated Map code.
 				Added debug right-click to move a non-Player Entity down 1 tile.
+				
+2019/04/19		(Bryan)
+				updated input handlers to return "endTurn" for turn order tracking
+				Modified "g" function to work with Item get functions
 
 2019/04/19:		(JSS5783)
 				Modified "get item" code.
@@ -36,8 +40,9 @@ from src.Map import *
 from tcod import event
 from src.item_functions import *
 from src.Entity import *
-from src import item_functions
+from src.item_functions import *
 from src.Status import *
+from src import item_functions
 
 
 class InputListener:
@@ -53,48 +58,45 @@ class InputListener:
 	# 	user_input = tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS| tcod.EVENT_MOUSE, key, mouse)
 	
 		if key.vk == tcod.KEY_UP:		#move up
-			inMap.updatePlayerPosition(inLog, inMap.getPlayerX(), inMap.getPlayerY() - 1)
+			inMap.updatePlayerPosition(inLog, inStatus, inMap.getPlayerX(), inMap.getPlayerY() - 1)
+			return "endTurn"
 			
 		elif key.vk == tcod.KEY_DOWN:	#move down
-			inMap.updatePlayerPosition(inLog, inMap.getPlayerX(), inMap.getPlayerY() + 1)
+			inMap.updatePlayerPosition(inLog, inStatus, inMap.getPlayerX(), inMap.getPlayerY() + 1)
+			return "endTurn"
 			
 		elif key.vk == tcod.KEY_LEFT:	#move left
-			inMap.updatePlayerPosition(inLog, inMap.getPlayerX() - 1, inMap.getPlayerY() )
+			inMap.updatePlayerPosition(inLog, inStatus, inMap.getPlayerX() - 1, inMap.getPlayerY() )
+			return "endTurn"
 			
 		elif key.vk == tcod.KEY_RIGHT:	#move right
-			inMap.updatePlayerPosition(inLog, inMap.getPlayerX() + 1, inMap.getPlayerY() )
-		
-# 		if key.vk == tcod.KEY_SHIFT:
-# 			if key.vk == tcod.KEY_RIGHT and key.vk == tcod.KEY_UP:	#move right
-# 				inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() - 1)
-# 		else:
-# 			if key.vk == tcod.KEY_UP:		#move up
-# 				inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() - 1)
-# 				
-# 			elif key.vk == tcod.KEY_DOWN:	#move down
-# 				inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() + 1)
-# 				
-# 			elif key.vk == tcod.KEY_LEFT:	#move left
-# 				inMap.updatePlayerPosition(inMap.getPlayerX() - 1, inMap.getPlayerY() )
-# 				
-# 			elif key.vk == tcod.KEY_RIGHT:	#move right
-# 				inMap.updatePlayerPosition(inMap.getPlayerX() + 1, inMap.getPlayerY() )
-# 		
+			inMap.updatePlayerPosition(inLog, inStatus, inMap.getPlayerX() + 1, inMap.getPlayerY() )
+			return "endTurn"
 	
-		if key.text == "g": 
+		if key.text == "g":		#[g]et item
+# 			item = inMap.getUnderPlayer()				
+# 			print(item)
+# 			print(inMap.aLstEntities)							
+# 			myPlayer = inMap.getTopEntity(inMap.getPlayerX(), inMap.getPlayerY() )
+			
+		
 			if inMap.getEntityIndexAt(FistoKit, inMap.getPlayerX(), inMap.getPlayerY()) != -1:
 				print("Found: FistoKit")
-# 				getFistoKit(item, myPlayer)
-				...
+# 				getFistoKit(item, myPlayer, inMap)
+				getFistoKit(inMap, inLog, inStatus)
 			elif inMap.getEntityIndexAt(Shield, inMap.getPlayerX(), inMap.getPlayerY()) != -1:
-				print("Found: Shield")
 # 				inMap.getEntityAt(inMap.getEntityIndexAt(FistoKit, inMap.getPlayerX, inMap.getPlayerY), inMap.getPlayerX, inMap.getPlayerY)
 # 				getShield(inMap.getEntityAt(inMap.getEntityIndexAt(Shield, inMap.getPlayerX(), inMap.getPlayerY()), inMap.getPlayerX(), inMap.getPlayerY()), inMap.getTopEntity(inMap.getPlayerX(), inMap.getPlayerY()) )
-				item_functions.getShield(inMap, inLog, inStatus)
-# 				inMap.removeEntityAtIndex(inMap.getEntityIndexAt(Shield, inMap.getPlayerX(), inMap.getPlayerY()), inMap.getPlayerX(), inMap.getPlayerY())
+# 				getShield(item, myPlayer, inMap)
+				getShield(inMap, inLog, inStatus)
 			elif inMap.getEntityIndexAt(Blaster, inMap.getPlayerX(), inMap.getPlayerY()) != -1:
-				print("Found: Blaster")
-				...
+# 				getBlaster(item, inMap)
+				getBlaster(inMap, inLog, inStatus)
+			else:
+				print("nothing here")
+# 			print(myPlayer.hp, myPlayer.damage)
+			print(INVENTORY)
+			return "endTurn"
 # 			for item in ITEMS:
 # 				if item.x == inMap.getPlayerX() and item.y == inMap.getPlayerY():
 # 						
@@ -119,11 +121,13 @@ class InputListener:
 		elif key.text == "t": 
 			if DEBUG_MODE: print("[DEBUG] Time-traveling attempt from timeline", inMap.getPlayerZ() )
 			if (inMap.getPlayerZ() == 0):
-				inMap.updatePlayerPosition(inLog, inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() + 1)
+				inMap.updatePlayerPosition(inLog, inStatus, inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() + 1)
 				inStatus.setTimeline(inMap.getPlayerZ() )
+				return "endTurn"
 			else:
-				inMap.updatePlayerPosition(inLog, inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() - 1)
+				inMap.updatePlayerPosition(inLog, inStatus, inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() - 1)
 				inStatus.setTimeline(inMap.getPlayerZ() )
+				return "endTurn"
 			
 		elif key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
 			tcod.console_set_fullscreen(not tcod.console_is_fullscreen() )
@@ -147,15 +151,18 @@ class InputListener:
 # 				inMap.removeEntityAt(HealthConsumable(), mouse.cx, mouse.cy)
 # 				inMap.removeEntityAtIndex(1, mouse.cx, mouse.cy)
 # 				inMap.moveEntityTo(inMap.getTopEntity(inMap.getPlayerX(), inMap.getPlayerY()), inMap.getPlayerX(), inMap.getPlayerY(), inMap.getPlayerZ() - 1)
-				inMap.moveEntityTo(inMap.getTopEntity(mouse.cx, mouse.cy), inLog, mouse.cx, mouse.cy + 1)
+# 				inMap.moveEntityTo(inMap.getTopEntity(mouse.cx, mouse.cy), inLog, mouse.cx, mouse.cy + 1)
 			for item in INVENTORY:
 				print(item.strName)
 				if item.strName == "Blaster":
 					print("Blaster")
 					for enemy in ENEMIES:
 						if enemy.x == mouse.cx and enemy.y == mouse.cy:
-							useBlaster(enemy, item)
+							useBlaster(inMap, inLog, inStatus, mouse.cx, mouse.cy)
 							print(enemy.hp)
-							print(item.ammo)
+							print(item.currentAmmo)
+					return "endTurn"
+				else:
+					print(inMap.getTopEntity(mouse.cx, mouse.cy))
 				
 	#END handle_keys(self, key, mouse, inMap)

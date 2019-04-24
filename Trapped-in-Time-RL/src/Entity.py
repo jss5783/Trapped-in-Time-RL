@@ -1,8 +1,13 @@
 '''
 ---CHANGELOG---
-2019/04/18		(JSS5783)
-				modified FistoKit to not use coordinates.
+2019/04/23		(JSS5783)
+				Updated some constructors with defaults.
 
+2019/04/20		(Bryan)
+				Changed Blaster ammo to a class variable instead of instance variable for level up purposes
+				
+2019/04/18		(JSS5783)
+				Modified FistoKit to not use coordinates.
 
 2019/04/16		(Bryan)
 				Updated Item classes (Blaster, Shield, and Fisto Kit) as needed
@@ -167,15 +172,17 @@ class Floor(Entity):
 
 
 class Enemy(Entity):
-	def __init__(self, intInX, intInY, intInZ):
+	def __init__(self, intInX, intInY, intInZ, intInMaxHealth=4):
 		super().__init__(intInX, intInY, intInZ, 'E', "enemy", ORANGE_LIGHT, BLACK, True, True)
+		self.hp = intInMaxHealth
 #END Enemy(Entity)
 
 
 class Player(Entity):
-	def __init__(self, intInX, intInY, intInZ, hp=1, damage=0):
+	def __init__(self, intInX, intInY, intInZ, maxHp=1, damage=0):
 		super().__init__(intInX, intInY, intInZ, '@', "player", WHITE, BLACK, True, True)
-		self.hp = hp
+		self.maxHp = maxHp
+		self.currentHp = maxHp
 		self.damage = damage
 #END Player(Entity)
 
@@ -199,36 +206,34 @@ class Player(Entity):
 
 
 class Shield(Entity):
-	def __init__(self, intInX, intInY, intInZ, charges, maxCharges):
+	def __init__(self, intInX, intInY, intInZ, currentCharges, maxCharges):
 		super().__init__(intInX, intInY, intInZ, '¿', "Shield", BLUE_LIGHT, BLACK, False, True)
 		self.x = intInX
 		self.y = intInY
-		self.charges = charges
+		self.currentCharges = currentCharges
 		self.maxCharges = maxCharges
 
 
 class FistoKit(Entity):
 # 	def __init__(self, x, y, charges=2, maxCharges=2, damage=5):
-	def __init__(self, intInX, intInY, intInZ, charges=2, maxCharges=2, damage=5):
+	def __init__(self, intInX, intInY, intInZ, currentCharges=2, maxCharges=2, damage=5):
 		'''
 		Melee weapon.
 		'''
 		super().__init__(intInX, intInY, intInZ, '¡', "Fisto Kit", BLUE_LIGHT, BLACK, False, True)
-		self.charges = charges
+		self.currentCharges = currentCharges
 		self.maxCharges = maxCharges
 		self.damage = damage
 
 
 class Blaster(Entity):
-	def __init__(self, intInX, intInY, intInZ, ammo, maxAmmo, damage):
+	def __init__(self, intInX, intInY, intInZ, maxAmmo=4, damage=2):
 		'''
 		Ranged weapon.
 		'''
 		super().__init__(intInX, intInY, intInZ, ',', "Blaster", BLUE_LIGHT, BLACK, False, True)
-		self.x = intInX
-		self.y = intInY
-		self.ammo = ammo
 		self.maxAmmo = maxAmmo
+		self.currentAmmo = maxAmmo
 		self.damage = damage
 
 

@@ -1,5 +1,8 @@
 '''
 ---CHANGELOG---
+2019/04/23		(JSS5783)
+				Merged code. Can now bump-to-attack.
+
 2019/04/20:		(JSS5783)
 				Created/implemented moveEntityTo (with updatePlayerPosition modified to match), interactWith, and activatePortal.
 
@@ -76,6 +79,7 @@ from src.MessageLog import *
 from src.Item import *
 from src.item_functions import *
 from tcod.constants import FOV_BASIC
+from src.item_functions import *
 
 
 	#	TODO: add turn order, action code here?, I guess (probably belongs within InputListener).
@@ -170,7 +174,7 @@ class Map:
 						#TODO: set Player x, y so map refreshes properly (at -1, -1 right now)
 					elif (self.strCurrentLine[x] == "E"):
 						self.aLstEntities[x][y][intInTimeline].append(Floor(x, y, intInTimeline) )
-						self.aLstEntities[x][y][intInTimeline].append(Enemy(x, y, intInTimeline) )
+						self.aLstEntities[x][y][intInTimeline].append(Enemy(x, y, intInTimeline, 4) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
@@ -212,8 +216,8 @@ class Map:
 							self.aLstEntities[x][y][intInTimeline].append(Shield(x, y, intInTimeline, 5, 5) )
 							item = Shield(x, y, intInTimeline, 5, 5)
 						elif randItem == 2:
-							self.aLstEntities[x][y][intInTimeline].append(Blaster( x, y, intInTimeline, 4, 4, 2) )
-							item = Blaster(x, y, intInTimeline, 4, 4, 2)
+							self.aLstEntities[x][y][intInTimeline].append(Blaster(x, y, intInTimeline, 4, 2) )
+							item = Blaster(x, y, intInTimeline, 4, 2)
 						ITEMS.append(item)
 						print(item.strName)
 						
@@ -465,8 +469,7 @@ class Map:
 		'''
 		if (intInZ == -1):	#if no z value given, use player's z-coord
 			intInZ = self.getPlayerZ()
-		
-		
+		
 		return self.aLstEntities[intInX][intInY][intInZ][self.getTopIndex(intInX, intInY, intInZ) ]
 # # 			return self.getTopEntity(x, y, self.getPlayerZ())
 # 		else:	#if z value given
@@ -493,6 +496,15 @@ class Map:
 # 				return 0
 # # 			return self.aLstEntities[x[y][self.getPlayerZ()]
 # 	#END top(self, x, y)
+	
+	
+	def getUnderPlayer(self):
+		'''
+		Returns top Entity that the Player is standing on.
+		(generally player/monster/wall/portal, assuming a stack of floor+item+player, but if none exist, then something like an item probably)
+		(Otherwise, return floor tile.)
+		'''
+		return self.aLstEntities[self.getPlayerX()][self.getPlayerY()][self.getPlayerZ()][self.getTopIndex(self.getPlayerX(), self.getPlayerY(), self.getPlayerZ() ) - 1 ]
 
 # 	
 # 	'''
@@ -587,7 +599,7 @@ class Map:
 # 		#else append
 
 	#TODO: finish implementation of addEntityAt, getEntityAt, and getEntityIndexAt.
-	def updatePlayerPosition(self, inLog, x, y, z=-1):
+	def updatePlayerPosition(self, inLog, inStatus, x, y, z=-1):
 		'''
 		Tries to move Player to given coordinates.
 		Used for time-traveling.
@@ -669,11 +681,11 @@ class Map:
 # 			else:
 # 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
 # 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
-		self.moveEntityTo(self.getTopEntity(self.intPlayerX, self.intPlayerY, self.intPlayerZ), inLog, x, y, z)
-	#END updatePlayerPosition(self, x, y, z=-1):
+		self.moveEntityTo(self.getTopEntity(self.intPlayerX, self.intPlayerY, self.intPlayerZ), inLog, inStatus, x, y, z)
+	#END updatePlayerPosition(self, inLog, inStatus, x, y, z=-1):
 	
 	
-	def moveEntityTo(self, entInEntity : Entity, inLog : MessageLog, intInX : int, intInY : int, intInZ=-1):
+	def moveEntityTo(self, entInEntity : Entity, inLog : MessageLog, inStatus : Status, intInX : int, intInY : int, intInZ=-1):
 		'''
 		Tries to move given Entity to given coordinates.
 		If occupied in same timeline, interact with obstruction's top Entity.
@@ -762,13 +774,13 @@ class Map:
 				if DEBUG_MODE: print("[DEBUG] can't time-travel; Entity position blocked in target timeline; may or may not be unsafe as well")
 				print(entInEntity.getZ(), intInZ)
 				if (entInEntity.getZ() == intInZ):	#only try to interact with target if in same timeline; no attacking from another timeline
-					return self.interactWith(inLog, entInEntity, intInX, intInY, intInZ)	#successful action = consume turn; unsuccessful turn/free action = do NOT consume turn 
+					return self.interactWith(inLog, inStatus, entInEntity, intInX, intInY, intInZ)	#successful action = consume turn; unsuccessful turn/free action = do NOT consume turn 
 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
 			return False	#unsuccessful turn/free action = do NOT consume turn
-	#END moveEntityTo(self, entInEntity : Entity, intInX, intInY, intInZ=-1)
+	#END moveEntityTo(self, entInEntity : Entity, inLog : MessageLog, inStatus : Status, intInX : int, intInY : int, intInZ=-1)
 	
 	
-	def interactWith(self, inLog, entInOrigin, intInX, intInY, intInZ=-1):
+	def interactWith(self, inLog, inStatus, entInOrigin, intInX, intInY, intInZ=-1):
 		'''
 		Acting Entity (entInOrigin) interacts with top Entity in tile of coordinates (intInX, intInY, intInZ)
 		
@@ -794,6 +806,7 @@ class Map:
 			if isinstance(self.entTarget, Enemy):
 				if DEBUG_MODE: print("[interactWith] Player attacks Enemy:", type(self.entTarget) )
 # 				Player.attack(self.entTarget)
+				meleeAttack(self, inLog, inStatus, intInX, intInY, intInZ)
 				self.bConsumeTurn = True
 			elif isinstance(self.entTarget, Portal):
 				self.activatePortal(inLog)
@@ -813,7 +826,7 @@ class Map:
 			if DEBUG_MODE: print("[interactWith] entInOrigin is not Player/Enemy; is", type(entInOrigin) )
 	
 		return self.bConsumeTurn
-	#END interactWith(self, inLog, entInOrigin, intInX, intInY, intInZ=-1)
+	#END interactWith(self, inLog, inStatus, entInOrigin, intInX, intInY, intInZ=-1)
 	
 	
 	def activatePortal(self, inLog):
