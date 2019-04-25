@@ -49,9 +49,9 @@ MAGENTA_LIGHT = tcod.Color(245,175,245)
 ITEMS = []		#Bryan: Added ITEMS list to store all items in game
 INVENTORY = []	#Bryan: Added INVENTORY list to handle items currently held by player
 ENEMIES = []  	#Bryan: Added ENEMIES list to store all enemies in game
-DEBUG_MODE = True
+DEBUG_MODE = False
 if DEBUG_MODE:	#TODO: use system datetime for non-debug value
 	SEED = 5
 else:
 	SEED = datetime.datetime.now()
-FOV_RADIUS = 3
+FOV_RADIUS = 5

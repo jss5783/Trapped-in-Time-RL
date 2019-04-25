@@ -1,5 +1,8 @@
 '''
 ---CHANGELOG---
+2019/04/24		(Bryan)
+				Added Enemy movement function 
+				
 2019/04/20		(Bryan)
 				Changed Blaster ammo to a class variable instead of instance variable for level up purposes
 				
@@ -118,11 +121,49 @@ class Floor(Entity):
 
 
 class Enemy(Entity):
-	def __init__(self, x, y, hp):
+	def __init__(self, x, y, z, hp, damage=2):
 		super().__init__('E', "enemy", ORANGE_LIGHT, BLACK, True, True)
 		self.x = x
 		self.y = y 
+		self.z = z
 		self.hp = hp
+		self.damage = damage
+		
+	def move(self, gameMap):
+		moveMap = tcod.map.Map(MAP_WIDTH, MAP_HEIGHT)
+		
+		for x1 in range(MAP_WIDTH):
+			for y1 in range(MAP_HEIGHT):
+				
+				if gameMap.isWalkable(x1, y1) == False and gameMap.getTopEntity(x1, y1) != self and gameMap.getTopEntity(x1, y1).strName != "player":
+					moveMap.walkable[y1, x1] = False
+				else:
+					moveMap.walkable[y1, x1] = True
+							
+		
+					
+				
+		astar = tcod.path.AStar(moveMap.walkable, 0)
+		print(astar)
+		mypath =  astar.get_path(self.y, self.x, gameMap.intPlayerY, gameMap.intPlayerX)
+		if not mypath:
+			print(mypath)
+		else:
+			print(mypath)
+			step = mypath[0]
+			y2, x2 = step
+			
+			if gameMap.intPlayerX == x2 and gameMap.intPlayerY == y2:
+				player = gameMap.getTopEntity(x2, y2)
+				player.hp -= self.damage
+				print(player.hp)
+			else:
+				gameMap.aLstEntities[self.x][self.y][self.z].remove(self)
+				gameMap.aTcodMaps[self.z].walkable[self.y][self.x] = True
+				self.x = x2 
+				self.y = y2
+				gameMap.aLstEntities[self.x][self.y][self.z].append(self)
+				gameMap.aTcodMaps[self.z].walkable[self.y][self.x] = False
 #END Enemy(Entity)
 
 
@@ -168,8 +209,8 @@ class FistoKit(Entity):
 		Melee weapon.
 		'''
 		super().__init__('¡', "Fisto Kit", BLUE_LIGHT, BLACK, False, True)
-# 		self.x = x
-# 		self.y = y
+		self.x = x
+		self.y = y
 		self.charges = charges
 		self.maxCharges = maxCharges
 		self.damage = damage

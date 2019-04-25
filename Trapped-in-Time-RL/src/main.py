@@ -1,6 +1,9 @@
 
 '''
 ---CHANGELOG---
+2019/04/24		(Bryan)
+				Added Enemy movement (function located in enemy class in Entity module)
+				
 2019/04/20		(Bryan)
 				Added level up condition
 				
@@ -42,7 +45,7 @@
  				Implemented basic movement/quitting.
 '''
 
-#imports
+# imports
 import tcod
 # from InputListener import *
 from src.Map import *
@@ -59,13 +62,13 @@ from DeathFunctions import *
 
 def main():
 
-#declaration and initialization
+# declaration and initialization
 	map1 = Map(MAP_WIDTH, MAP_HEIGHT, 2)
-	tcod.console_set_custom_font(FONT, tcod.FONT_LAYOUT_CP437)	#set console font
-	console = tcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, title="Trapped in Time RL (pre-alpha)", fullscreen=False)	#create main console
-	tcod.sys_set_fps(FPS_CAP)	#set FPS cap; only if real-time, but keeping as acttion-rate limiter
+	tcod.console_set_custom_font(FONT, tcod.FONT_LAYOUT_CP437)  # set console font
+	console = tcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, title="Trapped in Time RL (pre-alpha)", fullscreen=False)  # create main console
+	tcod.sys_set_fps(FPS_CAP)  # set FPS cap; only if real-time, but keeping as acttion-rate limiter
 	
-	#stores key inputs
+	# stores key inputs
 	key = tcod.Key()
 	mouse = tcod.Mouse()
 	# event = tcod.event()
@@ -78,14 +81,17 @@ def main():
 	log.addMessage("You awake in an abandoned factory, head pounding.")
 	log.addMessage("Who... are you? You look yourself over.")
 	log.addMessage("There is a strange watch-like device on one arm.")
-	log.addMessage("SYSTEM: [g]rab item / [t]ime-travel / [â†�â†‘â†“â†’] move")
+	log.addMessage("SYSTEM: [g]rab item / [t]ime-travel /  move")
 	
-	#main loop
+	# main loop
 	while not tcod.console_is_window_closed():
 		tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
     
 		if gameState == GameStates.PLAYERS_TURN:
 			print(gameState)
+			if map1.getTopEntity(map1.getPlayerX(), map1.getPlayerY(), map1.getPlayerZ()).hp <= 0:
+				gameState = GameStates.PLAYER_DEAD
+				
 			strCode = handler.handle_keys(key, mouse, map1, log, status)
 
 			console.clear()
@@ -96,20 +102,20 @@ def main():
     # 		tcod.console_set_default_foreground(console, BLUE_LIGHT)
   # 			tcod.console_rect(console, 0, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True)
   # 			tcod.console.Console.print_(console, 0, MAP_HEIGHT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
-  				status.setTooltip("(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName() )	#"tooltip" lists top Entity's name
+  				status.setTooltip("(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.getTopEntity(mouse.cx, mouse.cy).getName())  # "tooltip" lists top Entity's name
     # 		tcod.console_print_ex(console, 0, MAP_HEIGHT, tcod.BKGND_NONE, tcod.LEFT, "(" + str(mouse.cx) + "," + str(mouse.cy) + "): " + map1.alstObject[mouse.cx][mouse.cy][map1.top(mouse.cx, mouse.cy)].getName() + "   ")
     # 		tcod.console_flush()
 
 			for y in range(MAP_HEIGHT):
 				for x in range(MAP_WIDTH):
-					if map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == True:	#if in FoV
-						tcod.console_put_char_ex(console, x, y, map1.getTopEntity(x,y).getSymbol(), map1.getTopEntity(x,y).getFGColor(), map1.getTopEntity(x,y).getBGColor() )
+					if map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == True:  # if in FoV
+						tcod.console_put_char_ex(console, x, y, map1.getTopEntity(x, y).getSymbol(), map1.getTopEntity(x, y).getBGColor(), map1.getTopEntity(x, y).getFGColor())
   # 				elif (map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == False and map1.isExplored(x, y) == True):
   # 					tcod.console_put_char_ex(console, x, y, map1.getTopEntity(x,y).getSymbol(), BLACK, GRAY_LIGHT)
 					elif (map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == False and map1.aSymbolMemory[x][y][map1.getPlayerZ()] != "" and map1.aBoolIsExplored[x][y][map1.getPlayerZ()] == True):
-						tcod.console_put_char_ex(console, x, y, map1.aSymbolMemory[x][y][map1.getPlayerZ()], GRAY_DARK, BLACK)
+						tcod.console_put_char_ex(console, x, y, map1.aSymbolMemory[x][y][map1.getPlayerZ()], BLACK, GRAY_DARK)
 
-          #TODO: other timeline memory's inverted. "Assuming that the timelines are roughly analogous, here is what the MOST RECENT other one looked like"
+          # TODO: other timeline memory's inverted. "Assuming that the timelines are roughly analogous, here is what the MOST RECENT other one looked like"
   # 				elif (map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == False and map1.aSymbolMemory[x][y][map1.getPlayerZ()] != "" and map1.aBoolIsExplored[x][y][map1.getPlayerZ()] == True):
   # 					tcod.console_put_char_ex(console, x, y, map1.aSymbolMemory[x][y][map1.getPlayerZ()], BLACK, GRAY_DARK)
 					else:
@@ -137,9 +143,15 @@ def main():
 			for x in range(MAP_WIDTH):
 				for y in range(MAP_HEIGHT):
 					if map1.getTopEntity(x, y).strName == "enemy":
-						enemy = map1.getTopEntity(x, y)
-						if enemy.hp <= 0:
-							deadEnemy(enemy, map1)
+						ENEMIES.append(map1.getTopEntity(x, y))
+			print(ENEMIES)
+			print(len(ENEMIES))
+			for enemy in ENEMIES:
+				if enemy.hp <= 0:
+					deadEnemy(enemy, map1)
+				elif (map1.aTcodMaps[enemy.z].fov[enemy.y][enemy.x] == True):
+					enemy.move(map1)
+			ENEMIES.clear()
 			gameState = GameStates.PLAYERS_TURN   
 			
 		if gameState == GameStates.LEVEL_UP:
@@ -148,7 +160,15 @@ def main():
 			map1.aLstEntities[map1.getPlayerX()][map1.getPlayerY()][map1.getPlayerZ()].remove(map1.getUnderPlayer())
 			gameState = GameStates.ENEMY_TURN
 
-#END main()
+		if gameState == GameStates.PLAYER_DEAD:
+			
+			deadPlayer(map1.getTopEntity(map1.getPlayerX(), map1.getPlayerY(), map1.getPlayerZ()))
+			
+			strCode = handler.handle_keys(key, mouse, map1, log, status)
+			if (strCode == "code:EXIT"):
+				break
+
+# END main()
 
 	
 if __name__ == "__main__":

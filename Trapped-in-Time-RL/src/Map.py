@@ -157,7 +157,7 @@ class Map:
 						#TODO: set Player x, y so map refreshes properly (at -1, -1 right now)
 					elif (self.strCurrentLine[x] == "E"):
 						self.aLstEntities[x][y][intInTimeline].append(Floor() )
-						self.aLstEntities[x][y][intInTimeline].append(Enemy(x, y, 4) )
+						self.aLstEntities[x][y][intInTimeline].append(Enemy(x, y, intInTimeline, 4) )
 						self.aTcodMaps[intInTimeline].transparent[y][x] = True	#allows light through?
 						self.aTcodMaps[intInTimeline].walkable[y][x] = False		#walkable? (not solid?)
 						
@@ -638,6 +638,8 @@ class Map:
 # 					levelUp()
 			else:
 				if DEBUG_MODE: print("[DEBUG] can't travel; player position blocked in target timeline; may or may not be unsafe as well")
+				if self.getTopEntity(x, y, z).strName == "enemy":
+					meleeAttack(self.getTopEntity(self.intPlayerX, self.intPlayerY, self.intPlayerZ), self.getTopEntity(x, y, z))
 			if DEBUG_MODE: print("[DEBUG] bIsSafe:", self.bIsSafe, "| bIsBlocked:", self.bIsBlocked)
 	#END updatePlayerPosition(self, x, y, z=-1):	
 		

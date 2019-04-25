@@ -29,6 +29,7 @@ import tcod
 from src.constants import *
 from src.Map import *
 from tcod import event
+from src.GameStates import *
 
 
 class InputListener:
@@ -42,7 +43,7 @@ class InputListener:
 		Arrow keys for movement.
 		'''
 	# 	user_input = tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS| tcod.EVENT_MOUSE, key, mouse)
-	
+		
 		if key.vk == tcod.KEY_UP:		#move up
 			inMap.updatePlayerPosition(inMap.getPlayerX(), inMap.getPlayerY() - 1)
 			return "endTurn"
@@ -67,16 +68,16 @@ class InputListener:
 				getSheild(item, myPlayer, inMap)
 			elif item.strName == "Blaster":
 				getBlaster(item, inMap)
-								
-			
-			
+									
 				
+				
+					
 			else:
 				print("nothing here")
 			print(myPlayer.hp, myPlayer.damage)
 			print(INVENTORY)
 			return "endTurn"
-			
+				
 		elif key.vk == tcod.KEY_SPACE:	#TODO real version: time travel without assuming only 2 timelines.
 			if DEBUG_MODE: print("[DEBUG] Time-traveling attempt from timeline", inMap.getPlayerZ() )
 			if (inMap.getPlayerZ() == 0):
@@ -86,21 +87,21 @@ class InputListener:
 			return "endTurn"
 		elif key.vk == tcod.KEY_ENTER and key.lalt:	#toggle fullscreen
 			tcod.console_set_fullscreen(not tcod.console_is_fullscreen() )
-			
+				
 		elif key.vk == tcod.KEY_ESCAPE:	#exit game
 			return "code:EXIT"
-		
-		
-		#mouse-handling; maybe move into separate function if new TCoD version permits that.
-		#TODO: only return information if in FoV (skip memory FoV for now)
+			
+			
+			#mouse-handling; maybe move into separate function if new TCoD version permits that.
+			#TODO: only return information if in FoV (skip memory FoV for now)
 		if mouse.lbutton_pressed == True:	#left-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
 				inMap.printTileContents(mouse.cx, mouse.cy, 0)
 		if mouse.rbutton_pressed == True:	#right-click
 			if (mouse.cx >= 0 and mouse.cx < MAP_WIDTH) and (mouse.cy >= 0 and mouse.cy < MAP_HEIGHT):
-
+	
 				inMap.printTileContents(mouse.cx, mouse.cy, 1)
-		#if mouse.rbutton_pressed == True:
+			#if mouse.rbutton_pressed == True:
 			if inMap.getTopEntity(mouse.cx, mouse.cy).strName == "enemy":
 				enemy = inMap.getTopEntity(mouse.cx, mouse.cy)
 				for item in INVENTORY:
@@ -115,3 +116,6 @@ class InputListener:
 				print(inMap.getTopEntity(mouse.cx, mouse.cy))
 		
 
+# 		if gameState == GameStates.PLAYER_DEAD:
+# 			if key.vk == tcod.KEY_ESCAPE:	#exit game
+# 				return "code:EXIT"
