@@ -3,6 +3,7 @@
 ---CHANGELOG---
 2019/04/24		(Bryan)
 				Added Enemy movement (function located in enemy class in Entity module)
+				End Game game state (prevents a dead player message from being spammed if one is added)
 				
 2019/04/20		(Bryan)
 				Added level up condition
@@ -164,6 +165,28 @@ def main():
 			
 			deadPlayer(map1.getTopEntity(map1.getPlayerX(), map1.getPlayerY(), map1.getPlayerZ()))
 			
+			for y in range(MAP_HEIGHT):
+				for x in range(MAP_WIDTH):
+					if map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == True:  # if in FoV
+						tcod.console_put_char_ex(console, x, y, map1.getTopEntity(x, y).getSymbol(), map1.getTopEntity(x, y).getBGColor(), map1.getTopEntity(x, y).getFGColor())
+  # 				elif (map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == False and map1.isExplored(x, y) == True):
+  # 					tcod.console_put_char_ex(console, x, y, map1.getTopEntity(x,y).getSymbol(), BLACK, GRAY_LIGHT)
+					elif (map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == False and map1.aSymbolMemory[x][y][map1.getPlayerZ()] != "" and map1.aBoolIsExplored[x][y][map1.getPlayerZ()] == True):
+						tcod.console_put_char_ex(console, x, y, map1.aSymbolMemory[x][y][map1.getPlayerZ()], BLACK, GRAY_DARK)
+
+          # TODO: other timeline memory's inverted. "Assuming that the timelines are roughly analogous, here is what the MOST RECENT other one looked like"
+  # 				elif (map1.aTcodMaps[map1.getPlayerZ()].fov[y][x] == False and map1.aSymbolMemory[x][y][map1.getPlayerZ()] != "" and map1.aBoolIsExplored[x][y][map1.getPlayerZ()] == True):
+  # 					tcod.console_put_char_ex(console, x, y, map1.aSymbolMemory[x][y][map1.getPlayerZ()], BLACK, GRAY_DARK)
+					else:
+						tcod.console_put_char_ex(console, x, y, " ", BLACK, BLACK)
+    # 	tcod.console.Console.rect(console, 0, MAP_HEIGHT, STATUS_WIDTH, STATUS_HEIGHT, True, 0)
+    # 	tcod.console.Console.rect(console, MAP_WIDTH - MESSAGE_WIDTH, MAP_HEIGHT, MESSAGE_WIDTH, MESSAGE_HEIGHT, True, 0)
+			log.printLog(console)
+			status.printStatus(console)
+			tcod.console_flush()
+			gameState = GameStates.END_GAME
+			
+		if gameState == GameStates.END_GAME:
 			strCode = handler.handle_keys(key, mouse, map1, log, status)
 			if (strCode == "code:EXIT"):
 				break

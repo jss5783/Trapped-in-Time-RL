@@ -11,4 +11,5 @@ class GameStates(Enum):
     ENEMY_TURN = 2
     PLAYER_DEAD = 3
     LEVEL_UP = 4
+    END_GAME = 5
     
